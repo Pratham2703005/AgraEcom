@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,6 +19,8 @@ export function Navbar() {
   const pathname = usePathname();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Remove the automatic session refresh to prevent glitching
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -184,13 +187,24 @@ export function Navbar() {
           {status === "authenticated" ? (
             <div className="relative" ref={profileMenuRef}>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--neutral-200)] dark:bg-[var(--neutral-700)] text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-300)] dark:hover:bg-[var(--neutral-600)]"
+                className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden bg-[var(--neutral-200)] dark:bg-[var(--neutral-700)] text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-300)] dark:hover:bg-[var(--neutral-600)]"
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               >
                 <span className="sr-only">User menu</span>
-                <span className="text-xs font-semibold">
-                  {session.user?.name?.charAt(0) || "U"}
-                </span>
+                {session.user?.image ? (
+                  <Image 
+                    src={session.user.image} 
+                    alt={session.user.name || "User"} 
+                    fill
+                    sizes="32px"
+                    className="object-cover rounded-full"
+                    priority
+                  />
+                ) : (
+                  <span className="text-xs font-semibold">
+                    {session.user?.name?.charAt(0) || "U"}
+                  </span>
+                )}
               </button>
               
               {/* Profile Dropdown Menu */}
@@ -314,6 +328,27 @@ export function Navbar() {
               {status === "authenticated" && (
                 <>
                   <div className="border-t border-neutral-100 dark:border-neutral-700 pt-2">
+                    <div className="flex items-center space-x-2 py-2">
+                      {session.user?.image ? (
+                        <div className="h-8 w-8 rounded-full overflow-hidden relative">
+                          <Image 
+                            src={session.user.image} 
+                            alt={session.user.name || "User"} 
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                            priority
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--neutral-200)] dark:bg-[var(--neutral-700)] text-[var(--neutral-700)] dark:text-[var(--neutral-300)]">
+                          <span className="text-xs font-semibold">
+                            {session.user?.name?.charAt(0) || "U"}
+                          </span>
+                        </div>
+                      )}
+                      <span className="font-medium text-sm">{session.user?.name || "User"}</span>
+                    </div>
                     <Link
                       href="/profile"
                       className="block py-2 text-sm font-medium text-[var(--neutral-700)] dark:text-[var(--neutral-300)]"
@@ -329,13 +364,16 @@ export function Navbar() {
                       Orders
                     </Link>
                     {session.user?.role === "ADMIN" && (
-                      <Link
-                        href="/admin"
-                        className="block py-2 text-sm font-medium text-[var(--neutral-700)] dark:text-[var(--neutral-300)]"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Admin Dashboard
-                      </Link>
+                      
+                        <Link
+                          href="/admin"
+                          className="block py-2 text-sm font-medium text-[var(--neutral-700)] dark:text-[var(--neutral-300)]"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Admin Dashboard
+                        </Link>
+            
+                      
                     )}
                   </div>
                 </>

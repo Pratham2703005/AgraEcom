@@ -24,10 +24,21 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     if (status === "authenticated" && session) router.push("/");
-  }, [session, status, router]);
+    
+    // Check for error=email_not_verified in the URL
+    const error = searchParams.get("error");
+    if (error === "email_not_verified") {
+      setIsEmailNotVerified(true);
+      setLoginError("Your email is not verified. Please verify your email to continue.");
+    }
+  }, [session, status, router, searchParams]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -37,11 +48,61 @@ export default function LoginPage() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     setLoginError("");
+    setIsEmailNotVerified(false);
+    setUserEmail(data.email);
+    
     const result = await signIn("credentials", { ...data, redirect: false });
-    if (result?.error) setLoginError("Invalid email or password");
-    else router.push(callbackUrl);
+    
+    if (result?.error) {
+      if (result.error === "email_not_verified") {
+        setIsEmailNotVerified(true);
+        setLoginError("Your email is not verified. Please verify your email to continue.");
+      } else {
+        setLoginError("Invalid email or password");
+      }
+    } else {
+      router.push(callbackUrl);
+    }
+    
     setIsLoading(false);
   }
+
+  const handleResendVerification = async () => {
+    if (!userEmail) {
+      setUserEmail(form.getValues().email);
+    }
+    
+    if (!userEmail) {
+      setLoginError("Please enter your email address first");
+      return;
+    }
+    
+    setResendingEmail(true);
+    setResendSuccess(false);
+    
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setResendSuccess(true);
+        setLoginError("");
+      } else {
+        setLoginError(data.message || "Failed to resend verification email");
+      }
+    } catch {
+      setLoginError("An error occurred. Please try again.");
+    } finally {
+      setResendingEmail(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 dark:bg-neutral-900 p-4">
@@ -106,6 +167,35 @@ export default function LoginPage() {
             {loginError && (
               <div className="text-sm text-red-500 text-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
                 {loginError}
+                
+                {isEmailNotVerified && (
+                  <div className="mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="text-xs mt-1 h-8"
+                      onClick={handleResendVerification}
+                      disabled={resendingEmail || resendSuccess}
+                    >
+                      {resendingEmail ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          Sending...
+                        </div>
+                      ) : resendSuccess ? (
+                        "Verification email sent!"
+                      ) : (
+                        "Resend verification email"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {resendSuccess && !loginError && (
+              <div className="text-sm text-green-600 text-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                Verification email has been sent. Please check your inbox.
               </div>
             )}
             

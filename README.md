@@ -20,6 +20,26 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Setup
+
+### Cloudinary Configuration
+
+This project uses Cloudinary for image uploads. To set it up:
+
+1. Sign up for a free account at [Cloudinary](https://cloudinary.com/)
+2. Create a `.env.local` file in the root directory with the following variables:
+
+```
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+```
+
+3. Set up an unsigned upload preset:
+   - Go to Settings > Upload in your Cloudinary dashboard
+   - Scroll to "Upload presets" and click "Add upload preset"
+   - Set "Signing Mode" to "Unsigned"
+   - Save the preset name and use it in your .env.local file
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

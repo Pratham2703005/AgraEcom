@@ -8,8 +8,11 @@ export async function GET(request: Request) {
     const sort = searchParams.get("sort") || "latest";
     const brand = searchParams.get("brand") || "";
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const pageSize = 16; // Keep consistent page size for infinite scrolling
+    const pageSize = 12; // Reduced page size for better testing
     const skip = (page - 1) * pageSize;
+
+    console.log(`Fetching products - Page: ${page}, Skip: ${skip}, PageSize: ${pageSize}`);
+    console.log(`Filters - Search: "${search}", Sort: ${sort}, Brand: "${brand}"`);
 
     // Build the query
     const where: Record<string, unknown> = {};
@@ -24,15 +27,43 @@ export async function GET(request: Request) {
       };
     }
     
-    // Handle search
+    // Handle search with improved matching logic
     if (search) {
+      // Split search into words for better partial matching
+      const searchWords = search.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+      
       where.OR = [
+        // Match against full search string
         { name: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { 
           brand: {
             name: { contains: search, mode: "insensitive" }
           }
+        },
+        
+        // Match if product contains all words in the search (in any order)
+        {
+          AND: searchWords.map(word => ({
+            OR: [
+              { name: { contains: word, mode: "insensitive" } },
+              { description: { contains: word, mode: "insensitive" } }
+            ]
+          }))
+        },
+        
+        // Match if product name + brand name contains all search words
+        {
+          brand: {
+            name: {
+              contains: searchWords[0],
+              mode: "insensitive"
+            }
+          },
+          name: searchWords.length > 1 ? {
+            contains: searchWords.slice(1).join(" "),
+            mode: "insensitive"
+          } : undefined
         }
       ];
     }
@@ -66,6 +97,8 @@ export async function GET(request: Request) {
     // Get total count for pagination
     const totalProducts = await db.product.count({ where });
     const totalPages = Math.ceil(totalProducts / pageSize);
+
+    console.log(`Found ${products.length} products for page ${page}. Total: ${totalProducts}, Total Pages: ${totalPages}`);
 
     return NextResponse.json({
       products,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatProductName } from "@/lib/utils";
+import { toast } from "react-hot-toast";
 
 type Brand = {
   id: string;
@@ -37,12 +38,13 @@ type Cart = {
 };
 
 export default function CartPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<Record<string, boolean>>({});
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Fetch cart data
   useEffect(() => {
@@ -181,6 +183,24 @@ export default function CartPage() {
     };
   };
 
+  // Handle checkout
+  const handleCheckout = () => {
+    // Check if email is verified
+    const isEmailVerified = session?.user ? 'emailVerified' in session.user && session.user.emailVerified !== null : false;
+    
+    if (!isEmailVerified) {
+      toast.error("Please verify your email before placing an order");
+      router.push('/profile');
+      return;
+    }
+    
+    setIsCheckingOut(true);
+    // Proceed with checkout
+    // For now, just redirect to a thank you page or show a message
+    toast.success("Checkout functionality coming soon!");
+    setIsCheckingOut(false);
+  };
+
   // Loading state while session is loading
   if (status === "loading") {
     return (
@@ -266,6 +286,9 @@ export default function CartPage() {
   }
 
   const totals = calculateTotals();
+  
+  // Check if email is verified
+  const isEmailVerified = session?.user ? 'emailVerified' in session.user && session.user.emailVerified !== null : false;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
@@ -407,10 +430,39 @@ export default function CartPage() {
                 </div>
               </div>
               
+              {!isEmailVerified && (
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="flex items-start">
+                    <svg className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div className="text-sm text-amber-700 dark:text-amber-400">
+                      <p className="font-medium">Email verification required</p>
+                      <p className="mt-1">Please verify your email before placing an order.</p>
+                      <Link 
+                        href="/profile" 
+                        className="mt-2 inline-block text-amber-800 dark:text-amber-300 font-medium hover:underline"
+                      >
+                        Go to Profile →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <button
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg shadow-blue-500/20 transition-colors"
+                onClick={handleCheckout}
+                disabled={isCheckingOut || !isEmailVerified}
+                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg shadow-blue-500/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
               >
-                Proceed to Checkout
+                {isCheckingOut ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  "Proceed to Checkout"
+                )}
               </button>
               
               <div className="mt-4 text-center">

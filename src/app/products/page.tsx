@@ -6,9 +6,9 @@ interface SearchParams {
   brand?: string;
 }
 
-export default function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
-  const search = searchParams?.search || "";
-  const brand = searchParams?.brand || "";
+export default async function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
+  const search = (await searchParams)?.search || "";
+  const brand = (await searchParams)?.brand || "";
   
   return <ProductsPageClient search={search} brand={brand} />;
 }

@@ -1,0 +1,86 @@
+/* Custom Swiper styling for banner slider */
+
+.banner-slider-container {
+  --swiper-theme-color: #ffffff;
+  --swiper-navigation-size: 24px;
+}
+
+/* Navigation arrows */
+.banner-swiper .swiper-button-next,
+.banner-swiper .swiper-button-prev {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.banner-swiper .swiper-button-next:hover,
+.banner-swiper .swiper-button-prev:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.banner-swiper .swiper-button-next::after,
+.banner-swiper .swiper-button-prev::after {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Pagination bullets */
+.banner-swiper .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.banner-swiper .swiper-pagination-bullet-active {
+  background: #ffffff;
+  width: 16px;
+  border-radius: 4px;
+}
+
+/* Responsive styling for mobile */
+@media (max-width: 768px) {
+  .banner-swiper .swiper-button-next,
+  .banner-swiper .swiper-button-prev {
+    width: 30px;
+    height: 30px;
+  }
+
+  .banner-swiper .swiper-button-next::after,
+  .banner-swiper .swiper-button-prev::after {
+    font-size: 14px;
+  }
+
+  .banner-swiper .swiper-pagination-bullet {
+    width: 6px;
+    height: 6px;
+  }
+
+  .banner-swiper .swiper-pagination-bullet-active {
+    width: 12px;
+  }
+}
+
+/* Improve image display */
+.banner-swiper .swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark mode support */
+.dark .banner-swiper .swiper-button-next,
+.dark .banner-swiper .swiper-button-prev {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dark .banner-swiper .swiper-button-next:hover,
+.dark .banner-swiper .swiper-button-prev:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+} 

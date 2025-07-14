@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, ShoppingBag, Users, BarChart2, Truck, Settings, Clipboard, Tag } from "lucide-react";
+import { Package, ShoppingBag, Users, BarChart2, Truck, Settings, Clipboard, Tag, Image } from "lucide-react";
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -34,6 +34,15 @@ export default function AdminPage() {
       links: [
         { text: "Add New Brand", href: "/admin/brands/new" },
         { text: "View All Brands", href: "/admin/brands/view-all" },
+      ],
+    },
+    {
+      title: "Banners",
+      description: "Manage promotional banners",
+      icon: <Image className="h-6 w-6" />,
+      links: [
+        { text: "Add New Banner", href: "/admin/banners/new" },
+        { text: "Manage Banners", href: "/admin/banners" },
       ],
     },
     {

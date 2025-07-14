@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import SearchInput from "@/components/SearchInput";
 import { formatProductName } from "@/lib/utils";
+import BannerSlider from "@/components/BannerSlider";
 
 // Define Brand type
 type Brand = {
@@ -74,11 +75,12 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
+        console.log('Loading more products, current page:', page);
         setPage(prevPage => prevPage + 1);
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.1, rootMargin: '100px' });
     if (node) observer.current.observe(node);
-  }, [loading, hasMore]);
+  }, [loading, hasMore, page]);
 
   // Fetch products from API
   useEffect(() => {
@@ -94,17 +96,24 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
         if (sort) queryParams.set("sort", sort);
         if (brand) queryParams.set("brand", brand);
         queryParams.set("page", page.toString());
+        
+        console.log(`Fetching page ${page} of products...`);
         const response = await fetch(`/api/products?${queryParams.toString()}`);
+        
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
+        
         const data = await response.json();
+        console.log(`Received ${data.products.length} products for page ${page}. Total pages: ${data.pagination.totalPages}`);
+        
         if (page === 1) {
           setProducts(data.products);
         } else {
           setProducts(prev => [...prev, ...data.products]);
         }
-        setHasMore(page < data.pagination.totalPages);
+        
+        setHasMore(data.pagination.hasMore);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to load products. Please try again later.");
@@ -113,6 +122,7 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
         setLoading(false);
       }
     };
+    
     fetchProducts();
     setIsClient(true);
   }, [search, sort, brand, page]);
@@ -180,7 +190,7 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
           {isClient && 
-            <div className="relative max-w-md">
+            <div className="relative max-w-full">
               <SearchInput 
                 initialValue={search}
                 onSearch={handleSearch}
@@ -189,6 +199,9 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
               />
             </div>
           }
+
+          {/* Banner Slider */}
+          <BannerSlider />
 
           {/* Active Filters */}
           {(search || brand) && (
@@ -300,189 +313,98 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
           <>
             {products.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-fr">
-                {products.map((product, index) => {
-                  // Add ref to last product element
-                  if (products.length === index + 1) {
-                    return (
-                      <Link
-                        ref={lastProductElementRef}
-                        key={product.id}
-                        href={`/products/${product.id}`}
-                        className="group block h-full"
-                      >
-                        <div className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
-                          {/* Image Container */}
-                          <div className="relative aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-900">
-                            {product.images && product.images.length > 0 ? (
-                              <img
-                                src={product.images[0]}
-                                alt={formatProductName(product)}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
-                                <svg className="w-12 h-12 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                              </div>
-                            )}
-                            
-                            <div className="absolute top-2 left-2 flex flex-col gap-1">
-                              {product.discount > 0 && (
-                                <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  -{product.discount}%
-                                </span>
-                              )}
-                              {isNewProduct(product.updatedAt) && (
-                                <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  NEW
-                                </span>
-                              )}
+                {products.map((product) => {
+                  // We'll use a separate observer element instead of attaching to the last product
+                  return (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.id}`}
+                      className="group block h-full"
+                    >
+                      <div className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
+                        {/* Image Container */}
+                        <div className="relative aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-900">
+                          {product.images && product.images.length > 0 ? (
+                            <img
+                              src={product.images[0]}
+                              alt={formatProductName(product)}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
+                              <svg className="w-12 h-12 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
                             </div>
-
-                            {/* Stock Warning */}
-                            {product.piecesLeft !== undefined && product.piecesLeft !== null && product.piecesLeft <= 5 && product.piecesLeft > 0 && (
-                              <div className="absolute top-2 right-2">
-                                <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  {product.piecesLeft} left
-                                </span>
-                              </div>
+                          )}
+                          
+                          <div className="absolute top-2 left-2 flex flex-col gap-1">
+                            {product.discount > 0 && (
+                              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                -{product.discount}%
+                              </span>
+                            )}
+                            {isNewProduct(product.updatedAt) && (
+                              <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                NEW
+                              </span>
                             )}
                           </div>
+
+                          {/* Stock Warning */}
+                          {product.piecesLeft !== undefined && product.piecesLeft !== null && product.piecesLeft <= 5 && product.piecesLeft > 0 && (
+                            <div className="absolute top-2 right-2">
+                              <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                {product.piecesLeft} left
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Product Info */}
+                        <div className="p-3 flex flex-col flex-grow">
+                          {product.brand && (
+                            <div className="mb-1">
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const params = new URLSearchParams(searchParams.toString());
+                                  params.set("brand", product.brand?.name || "");
+                                  router.push(`/products?${params.toString()}`);
+                                }}
+                                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                {product.brand.name}
+                              </button>
+                            </div>
+                          )}
+                          <h3 className="font-medium text-neutral-900 dark:text-neutral-100 text-sm leading-[1.4] mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 flex-grow min-h-[40px]">
+                            {formatProductName(product)}
+                          </h3>
                           
-                          {/* Product Info */}
-                          <div className="p-3 flex flex-col flex-grow">
-                            {product.brand && (
-                              <div className="mb-1">
-                                <button 
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const params = new URLSearchParams(searchParams.toString());
-                                    params.set("brand", product.brand?.name || "");
-                                    router.push(`/products?${params.toString()}`);
-                                  }}
-                                  className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                                >
-                                  {product.brand.name}
-                                </button>
-                              </div>
-                            )}
-                            <h3 className="font-medium text-neutral-900 dark:text-neutral-100 text-sm leading-[1.4] mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 flex-grow min-h-[40px]">
-                              {formatProductName(product)}
-                            </h3>
-                            
-                            <div className="flex items-center justify-between mt-auto">
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-neutral-900 dark:text-white">
-                                ₹{product.price.toFixed(2)}
+                          <div className="flex items-center justify-between mt-auto">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                              ₹{product.price.toFixed(2)}
+                              </span>
+                              {product.discount > 0 ? (
+                                <span className="text-sm text-neutral-400 line-through">
+                                  ₹{product.mrp.toFixed(2)}
                                 </span>
-                                {product.discount > 0 ? (
-                                  <span className="text-sm text-neutral-400 line-through">
-                                    ₹{product.mrp.toFixed(2)}
-                                  </span>
-                                ) : (
-                                  <span className="text-sm text-transparent">
-                                    ₹{product.mrp.toFixed(2)}
-                                  </span>
-                                )}
-                              </div>
+                              ) : (
+                                <span className="text-sm text-transparent">
+                                  ₹{product.mrp.toFixed(2)}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
-                      </Link>
-                    );
-                  } else {
-                    return (
-                      <Link
-                        key={product.id}
-                        href={`/products/${product.id}`}
-                        className="group block h-full"
-                      >
-                        <div className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
-                          {/* Image Container */}
-                          <div className="relative aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-900">
-                            {product.images && product.images.length > 0 ? (
-                              <img
-                                src={product.images[0]}
-                                alt={formatProductName(product)}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
-                                <svg className="w-12 h-12 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                              </div>
-                            )}
-                            
-                            <div className="absolute top-2 left-2 flex flex-col gap-1">
-                              {product.discount > 0 && (
-                                <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  -{product.discount}%
-                                </span>
-                              )}
-                              {isNewProduct(product.updatedAt) && (
-                                <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  NEW
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Stock Warning */}
-                            {product.piecesLeft !== undefined && product.piecesLeft !== null && product.piecesLeft <= 5 && product.piecesLeft > 0 && (
-                              <div className="absolute top-2 right-2">
-                                <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                  {product.piecesLeft} left
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Product Info */}
-                          <div className="p-3 flex flex-col flex-grow">
-                            {product.brand && (
-                              <div className="mb-1">
-                                <button 
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const params = new URLSearchParams(searchParams.toString());
-                                    params.set("brand", product.brand?.name || "");
-                                    router.push(`/products?${params.toString()}`);
-                                  }}
-                                  className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                                >
-                                  {product.brand.name}
-                                </button>
-                              </div>
-                            )}
-                            <h3 className="font-medium text-neutral-900 dark:text-neutral-100 text-sm leading-[1.4] mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 flex-grow min-h-[40px]">
-                              {formatProductName(product)}
-                            </h3>
-                            
-                            <div className="flex items-center justify-between mt-auto">
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-neutral-900 dark:text-white">
-                                ₹{product.price.toFixed(2)}
-                                </span>
-                                {product.discount > 0 ? (
-                                  <span className="text-sm text-neutral-400 line-through">
-                                    ₹{product.mrp.toFixed(2)}
-                                  </span>
-                                ) : (
-                                  <span className="text-sm text-transparent">
-                                    ₹{product.mrp.toFixed(2)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  }
+                      </div>
+                    </Link>
+                  );
                 })}
+                
               </div>
             ) : (
               <div className="text-center py-20">
@@ -500,8 +422,23 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
             
             {/* Loading More Indicator */}
             {loading && (
-              <div className="flex justify-center mt-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="mt-8">
+                
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-fr">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <ProductSkeleton key={`loading-more-${index}`} />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Intersection Observer Debug Element */}
+            {hasMore && !loading && products.length > 0 && (
+              <div 
+                ref={lastProductElementRef}
+                className="h-10 flex items-center justify-center text-sm text-neutral-500 mt-8"
+              >
+                Loading more products...
               </div>
             )}
           </>

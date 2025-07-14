@@ -1,23 +1,12 @@
-import { db } from "@/lib/db";
 import Link from "next/link";
-import { Suspense } from "react";
 import ViewAllProductsTable from "./view-all-table";
 import { ArrowLeftIcon } from "lucide-react";
+import { Product } from "@prisma/client";
 
-export default async function ViewAllProductsPage({ searchParams }: { searchParams: { page?: string } }) {
-  const page = Number(searchParams?.page) || 1;
-  const pageSize = 20;
-  const skip = (page - 1) * pageSize;
-  const products = await db.product.findMany({
-    skip,
-    take: pageSize,
-    orderBy: { createdAt: "desc" },
-    include: {
-      brand: true
-    }
-  });
-  const total = await db.product.count();
-  const totalPages = Math.ceil(total / pageSize);
+export default async function ViewAllProductsPage() {
+  // We'll let the client component handle all data fetching
+  // This provides better UX with the skeleton loading
+  const initialProducts: Product[] = [];
  
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -29,40 +18,8 @@ export default async function ViewAllProductsPage({ searchParams }: { searchPara
       </div>
       
       <div className="bg-white shadow-sm overflow-hidden">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-neutral-600"></div>
-              <span className="ml-2 text-neutral-600">Loading...</span>
-            </div>
-          }>
-            <ViewAllProductsTable products={products} />
-          </Suspense>
-        </div>
-
-        <div className="flex justify-between items-center mt-6">
-          <div className="text-neutral-600">
-            Page {page} of {totalPages}
-          </div>
-          <div className="flex gap-3">
-            {page > 1 && (
-              <Link 
-                href={`/admin/products/view-all?page=${page - 1}`} 
-                className="px-4 py-2 bg-neutral-100 border border-neutral-300 rounded-lg hover:bg-neutral-200 text-neutral-700"
-              >
-                Previous
-              </Link>
-            )}
-            {page < totalPages && (
-              <Link 
-                href={`/admin/products/view-all?page=${page + 1}`} 
-                className="px-4 py-2 bg-neutral-100 border border-neutral-300 rounded-lg hover:bg-neutral-200 text-neutral-700"
-              >
-                Next
-              </Link>
-            )}
-          </div>
-        </div>
+        <ViewAllProductsTable products={initialProducts} />
       </div>
-    
+    </div>
   );
 }

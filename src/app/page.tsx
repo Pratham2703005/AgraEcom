@@ -39,7 +39,7 @@ export default async function Home() {
         <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-20 z-[-1]"></div>
         <div className="mx-auto flex flex-col items-center justify-center px-4 text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-6xl text-neutral-950">
-            Beauty That Speaks <span className="text-[var(--primary)]">For You</span>
+            Beauty That Speaks <span className="text-[var(--primary-dark)]">For You</span>
           </h1>
           <p className="mb-8 max-w-2xl text-lg text-[var(--neutral-700)]">
             Discover premium skincare and cosmetics that enhance your natural beauty.
@@ -62,13 +62,66 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* <section className="relative min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-5 z-[-1]"></div>
+        
+        <div className="absolute inset-0 overflow-hidden z-[-1]">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-4 text-center z-10">
+         
+          
+          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
+            Beauty That Speaks
+            <br />
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">For You</span>
+          </h1>
+          
+          <p className="mb-8 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed">
+            Discover premium skincare and cosmetics that enhance your natural beauty.
+            <br />
+            <span className="text-blue-600 font-medium">Formulated with care for all skin types.</span>
+          </p>
+          
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0 sm:justify-center mb-12">
+            <Link
+              href="/products"
+              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+            >
+              <span className="absolute inset-0 bg-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              Shop Now
+              <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            
+            <Link
+              href="/about"
+              className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-900 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              Learn More
+              <svg className="w-5 h-5 ml-2 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </Link>
+          </div>
+
+          
+        </div>
+      </section> */}
+
+      
+
+
       {/* Brands Section */}
       <BrandsSectionWrapper />
 
       {/* Featured Products */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-[var(--primary)] dark:bg-neutral-800 py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold text-gray-900">Featured Products</h2>
+          <h2 className="mb-12 text-center text-4xl font-bold text-neutral-50">Featured Products</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {featuredProducts.map((product) => (
               <Link
@@ -111,12 +164,12 @@ export default async function Home() {
                   {/* Fixed height content container */}
                   <div className="p-4 flex flex-col flex-1 bg-white dark:bg-neutral-800">
                     {/* Product name - fixed height with line clamp */}
-                    <h3 className="font-semibold text-gray-900 dark:text-neutral-100  group-hover:text-blue-600 transition-colors duration-200 text-sm leading-tight mb-1 line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="font-semibold text-gray-900 dark:text-neutral-100  group-hover:text-blue-600 transition-colors duration-200 text-lg leading-[1.75rem] mb-1 line-clamp-2 min-h-[2.5rem]">
                       {formatProductName(product)}
                     </h3>
 
                     {/* Brand - fixed height */}
-                    <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3 min-h-[1rem]">
+                    <p className="text-sm text-gray-500 dark:text-neutral-400 mb-3 min-h-[1.5rem]">
                       {product.brand ? product.brand.name : 'No Brand'}
                     </p>
 
@@ -146,7 +199,7 @@ export default async function Home() {
           <div className="mt-12 text-center">
             <Link
               href="/products"
-              className="inline-flex items-center px-8 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 shadow-lg hover:shadow-xl font-medium"
+              className="inline-flex items-center px-8 py-3 bg-[var(--primary-dark)] text-white rounded-full hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl font-medium"
             >
               View All Products
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +217,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
             {benefits.map((benefit) => (
               <div key={benefit.title} className="flex flex-col items-center text-center">
-                <div className="mb-4 rounded-full bg-[var(--primary-light)] p-4 text-[var(--primary)]">
+                <div className="mb-4 rounded-full bg-[var(--primary-light)] p-4 text-white dark:text-[var(--primary-dark)]">
                   <div className="h-12 w-12" dangerouslySetInnerHTML={{ __html: benefit.icon }}></div>
                 </div>
                 <h3 className="mb-2 text-xl font-semibold">{benefit.title}</h3>
@@ -176,7 +229,7 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-[var(--primary)] py-16 text-white">
+      <section className="bg-[var(--primary)] dark:bg-neutral-800 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold">Ready to Transform Your Beauty Routine?</h2>
           <p className="mb-8 text-lg">
@@ -184,7 +237,7 @@ export default async function Home() {
           </p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-lg font-medium text-[var(--primary)] transition-colors hover:bg-[var(--neutral-100)]"
+            className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-lg font-medium text-[var(--primary)] dark:text-neutral-950 transition-colors hover:bg-[var(--neutral-100)]"
           >
             Shop Now
           </Link>

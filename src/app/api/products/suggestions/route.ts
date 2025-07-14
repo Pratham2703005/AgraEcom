@@ -12,12 +12,40 @@ export async function GET(request: Request) {
       return NextResponse.json({ suggestions: [] });
     }
 
+    // Split query into words for better partial matching
+    const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+    
     // Get product name suggestions
     const productSuggestions = await db.product.findMany({
       where: {
         OR: [
+          // Match against full query string
           { name: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
+          
+          // Match if product contains all words in the query (in any order)
+          {
+            AND: queryWords.map(word => ({
+              OR: [
+                { name: { contains: word, mode: "insensitive" } },
+                { description: { contains: word, mode: "insensitive" } }
+              ]
+            }))
+          },
+          
+          // Match if product name + brand name contains all query words
+          {
+            brand: {
+              name: {
+                contains: queryWords[0],
+                mode: "insensitive"
+              }
+            },
+            name: queryWords.length > 1 ? {
+              contains: queryWords.slice(1).join(" "),
+              mode: "insensitive"
+            } : undefined
+          }
         ],
       },
       select: {

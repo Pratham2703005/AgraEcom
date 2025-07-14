@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, FreeMode } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/free-mode';
 
 // Define the Brand interface
 interface Brand {
@@ -12,10 +18,18 @@ interface Brand {
   imageUrl: string;
 }
 
+// Brand skeleton component for loading state
+const BrandSkeleton = () => (
+  <div className="flex flex-col items-center justify-center w-full animate-pulse">
+    <div className="w-24 h-24 mb-3 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+    <div className="h-4 w-16 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+  </div>
+);
+
 // Memoize the BrandCard component to prevent unnecessary re-renders
 const BrandCard = memo(({ brand }: { brand: Brand }) => (
   <Link
-    href={`/products?brand=${brand.slug}`}
+    href={`/products?brand=${encodeURIComponent(brand.name)}`}
     className="group flex flex-col items-center justify-center w-full"
     scroll={false}
   >
@@ -65,72 +79,7 @@ export const BrandsSection = memo(function BrandsSection() {
     fetchBrands();
   }, []);
   
-  // Responsive: show 2 on xs, 3 on sm, 6 on lg+
-  const getBrandsToShow = () => {
-    if (typeof window === "undefined") return 6;
-    if (window.innerWidth < 640) return 2;
-    if (window.innerWidth < 1024) return 3;
-    return 6;
-  };
-
-  const [brandsToShow, setBrandsToShow] = useState(getBrandsToShow());
-  const [startIndex, setStartIndex] = useState(0);
-  const [isSliding, setIsSliding] = useState(false);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Responsive update
-  useEffect(() => {
-    const handleResize = () => setBrandsToShow(getBrandsToShow());
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
-  // Auto-advance with smooth sliding
-  useEffect(() => {
-    if (!brands.length || brands.length <= brandsToShow) return;
-    
-    // Clear any existing interval when dependencies change
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    
-    intervalRef.current = setInterval(() => {
-      setIsSliding(true);
-    }, 2500);
-    
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [brandsToShow, brands.length]);
-  
-  // Animate row when sliding
-  useEffect(() => {
-    if (isSliding && rowRef.current) {
-      rowRef.current.style.transition = 'transform 0.5s cubic-bezier(0.4,0,0.2,1)';
-      rowRef.current.style.transform = `translateX(-${100 / (brandsToShow + 1)}%)`;
-    }
-  }, [isSliding, brandsToShow]);
-
-  // After sliding animation, update window and reset position
-  const handleTransitionEnd = () => {
-    if (isSliding && brands.length > 0) {
-      setIsSliding(false);
-      setStartIndex((prev) => (prev + 1) % brands.length);
-      if (rowRef.current) {
-        rowRef.current.style.transition = 'none';
-        rowRef.current.style.transform = 'translateX(0)';
-        // Force reflow
-        void rowRef.current.offsetWidth;
-        rowRef.current.style.transition = '';
-      }
-    }
-  };
-
-  // If loading, show loading state
+  // If loading, show skeleton loading state
   if (loading) {
     return (
       <section className="py-16 bg-neutral-50 dark:bg-neutral-900">
@@ -144,7 +93,11 @@ export const BrandsSection = memo(function BrandsSection() {
             </p>
           </div>
           <div className="flex justify-center">
-            <div className="animate-pulse">Loading brands...</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <BrandSkeleton key={`brand-skeleton-${index}`} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -152,7 +105,6 @@ export const BrandsSection = memo(function BrandsSection() {
   }
 
   // Always show the section, even if there are no brands yet
-  // This ensures the section is visible while data is being loaded
   if (brands.length === 0) {
     return (
       <section className="py-16 bg-neutral-50 dark:bg-neutral-900">
@@ -173,12 +125,6 @@ export const BrandsSection = memo(function BrandsSection() {
     );
   }
 
-  // Compute visible brands (N+1 for smooth slide)
-  const visibleBrands = [];
-  for (let i = 0; i < brandsToShow + 1; i++) {
-    visibleBrands.push(brands[(startIndex + i) % brands.length]);
-  }
-
   return (
     <section className="py-16 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-7xl px-4">
@@ -190,32 +136,46 @@ export const BrandsSection = memo(function BrandsSection() {
             Discover premium brands and exclusive collections
           </p>
         </div>
+        
         <div className="relative">
           {/* Edge fade gradients */}
           <div className="pointer-events-none absolute left-0 top-0 h-full w-12 z-20 bg-gradient-to-r from-neutral-50/90 dark:from-neutral-900/90 to-transparent" />
           <div className="pointer-events-none absolute right-0 top-0 h-full w-12 z-20 bg-gradient-to-l from-neutral-50/90 dark:from-neutral-900/90 to-transparent" />
 
-          {/* Brands Carousel */}
-          <div className="overflow-hidden">
-            <div
-              ref={rowRef}
-              className="flex"
-              style={{ width: `${((brandsToShow + 1) * 100) / brandsToShow}%` }}
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {visibleBrands.map((brand, idx) => (
-                <div
-                  key={`${brand.slug}-${startIndex}-${idx}`}
-                  className="flex-shrink-0 px-3 sm:px-4 flex justify-center"
-                  style={{ width: `${100 / (brandsToShow + 1)}%` }}
-                >
+          {/* Brands Carousel using Swiper */}
+          <Swiper
+            modules={[Autoplay, FreeMode]}
+            spaceBetween={24}
+            slidesPerView={2}
+            loop={true}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            freeMode={true}
+            breakpoints={{
+              640: {
+                slidesPerView: 3,
+                spaceBetween: 32,
+              },
+              1024: {
+                slidesPerView: 6,
+                spaceBetween: 32,
+              },
+            }}
+            className="brands-swiper"
+          >
+            {brands.map((brand) => (
+              <SwiperSlide key={brand.id} className="!h-auto">
+                <div className="flex justify-center px-3 sm:px-4">
                   <BrandCard brand={brand} />
                 </div>
-              ))}
-            </div>
-          </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
     </section>
   );
 });
+

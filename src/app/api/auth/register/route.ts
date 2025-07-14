@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcrypt";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { sendVerificationEmail } from "@/lib/email";
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -46,8 +47,17 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
+        emailVerified: null, // Ensure email is not verified yet
       },
     });
+
+    // Send verification email
+    const emailResult = await sendVerificationEmail(email, name);
+    
+    if (!emailResult.success) {
+      console.error("Failed to send verification email:", emailResult.error);
+      // We continue even if email sending fails, but log the error
+    }
 
     // Create a new object without the password
     const { id, name: userName, email: userEmail, role, createdAt, updatedAt } = user;
@@ -55,8 +65,9 @@ export async function POST(req: Request) {
     
     return NextResponse.json(
       { 
-        message: "User registered successfully", 
-        user: userWithoutPassword 
+        message: "User registered successfully. Please check your email to verify your account.", 
+        user: userWithoutPassword,
+        emailSent: emailResult.success
       },
       { status: 201 }
     );

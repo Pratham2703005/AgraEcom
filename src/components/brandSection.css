@@ -1,0 +1,12 @@
+.brands-swiper {
+    overflow: visible !important;
+  }
+  
+  .brands-swiper .swiper-slide {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .brands-swiper .swiper-slide:hover {
+    transform: translateY(-2px);
+  }
+  

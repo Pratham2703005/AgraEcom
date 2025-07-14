@@ -42,24 +42,28 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true);
     setRegisterError("");
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: data.name, email: data.email, password: data.password }),
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setRegisterError(result.message || "Registration failed. Please try again.");
+    
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, email: data.email, password: data.password }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        setRegisterError(result.message || "Registration failed. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Redirect to verification pending page instead of auto-login
+      router.push(`/verification-pending?email=${encodeURIComponent(data.email)}`);
+    } catch {
+      setRegisterError("An error occurred. Please try again.");
       setIsLoading(false);
-      return;
     }
-    const signInResult = await signIn("credentials", { email: data.email, password: data.password, redirect: false });
-    if (signInResult?.error) {
-      setRegisterError("Account created but couldn't sign in automatically. Please sign in manually.");
-      setIsLoading(false);
-      return;
-    }
-    router.push(callbackUrl);
   }
 
   return (
