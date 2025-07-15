@@ -3,10 +3,9 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-type PageProps = Promise<{id: string}>
 
-export async function GET(request: NextRequest, props : {params : PageProps}) {
-  const {id} = await props.params
+export async function GET(request: NextRequest,  context: { params: { id: string } }) {
+  const {id} = context.params
   try {
     const session = await getServerSession(authOptions);
     
@@ -34,8 +33,8 @@ export async function GET(request: NextRequest, props : {params : PageProps}) {
   }
 }
 
-export async function PATCH(request: NextRequest, props : {params : PageProps}) {
-  const {id} = await props.params
+export async function PATCH(request: NextRequest,   context: { params: { id: string } }) {
+  const {id} = context.params
   try {
     const session = await getServerSession(authOptions);
     
@@ -76,8 +75,8 @@ export async function PATCH(request: NextRequest, props : {params : PageProps}) 
   }
 }
 
-export async function DELETE(request: NextRequest,props : {params : PageProps}) {
-  const {id} = await props.params
+export async function DELETE(request: NextRequest,  context: { params: { id: string } }) {
+  const {id} = context.params
   try {
     const session = await getServerSession(authOptions);
     
