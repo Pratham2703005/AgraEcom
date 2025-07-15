@@ -32,12 +32,12 @@ type Product = {
 };
 
 export default function ProductDetailPage({
-  params,
+  context,
 }: {
-  params:{ id: string };
+  context: { params: { id: string } };
 }) {
   
-  const { id } =params;
+  const { id } = context.params;
   const router = useRouter();
   
   const [product, setProduct] = useState<Product | null>(null);

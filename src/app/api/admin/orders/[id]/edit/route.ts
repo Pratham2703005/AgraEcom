@@ -16,7 +16,7 @@ const orderEditSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -33,7 +33,7 @@ export async function POST(
       );
     }
 
-    const orderId = params.id;
+    const orderId = context.params.id;
     const body = await request.json();
 
     // Validate request body
