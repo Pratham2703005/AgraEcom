@@ -4,8 +4,10 @@ import EditProductForm from "./edit-product-form";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+type PageProps = Promise<{id: string}>
+
+export default async function EditProductPage(props : {params : PageProps}) {
+  const { id } = await props.params;
   const product = await db.product.findUnique({ 
     where: { id: id },
     include: {
