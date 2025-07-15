@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-type Context = { params: Record<string, string> };
 
-export async function GET(request: NextRequest,  context:Context) {
-  const id = context.params.id
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "ADMIN") {
@@ -34,9 +33,9 @@ export async function GET(request: NextRequest,  context:Context) {
   }
 }
 
-export async function PATCH(request: NextRequest,   context: Context) {
-  const id = context.params.id
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "ADMIN") {
@@ -76,9 +75,9 @@ export async function PATCH(request: NextRequest,   context: Context) {
   }
 }
 
-export async function DELETE(request: NextRequest,  context:Context) {
-  const id = context.params.id
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "ADMIN") {
