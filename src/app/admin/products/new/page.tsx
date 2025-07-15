@@ -5,9 +5,8 @@ import Link from "next/link";
 import { ArrowLeftIcon, PlusIcon } from "lucide-react";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
-const CLOUDINARY_UPLOAD_PRESET = "akshop_products";
-const CLOUDINARY_CLOUD_NAME = "dxaymasp1";
-
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 // Define Brand type
 type Brand = {
   id: string;
@@ -95,7 +94,7 @@ export default function NewProductPage() {
     for (let i = 0; i < files.length; i++) {
       const formData = new FormData();
       formData.append("file", files[i]);
-      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET || "");
       try {
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
           method: "POST",
@@ -125,7 +124,7 @@ export default function NewProductPage() {
       // Upload to Cloudinary using the URL
       const formData = new FormData();
       formData.append("file", imageUrl);
-      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET || "");
       
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
         method: "POST",

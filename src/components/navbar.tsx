@@ -19,6 +19,7 @@ export function Navbar() {
   const pathname = usePathname();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [client, setClient] = useState(false);
 
   // Remove the automatic session refresh to prevent glitching
 
@@ -78,8 +79,9 @@ export function Navbar() {
         console.error("Error fetching cart:", error);
       }
     };
-
+    setClient(true);
     fetchCartCount();
+    
   }, [status]);
 
   const handleCartClick = () => {
@@ -139,16 +141,17 @@ export function Navbar() {
           {/* Search Input with expansion */}
           <div className="relative">
             {!isSearchExpanded ? (
-              <button
-                onClick={() => setIsSearchExpanded(true)}
-                className="rounded-full p-2 text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-100)] dark:hover:bg-[var(--neutral-800)] transition-all duration-200"
-                aria-label="Search"
-              >
+              client && (
+                <button
+                  onClick={() => setIsSearchExpanded(true)}
+                  className="rounded-full p-2 text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-100)] dark:hover:bg-[var(--neutral-800)] transition-all duration-200"
+                  aria-label="Search"
+                >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-              </button>
+              </button>)
             ) : (
               <div className="w-64 animate-fadeIn" ref={searchInputRef}>
                 <SearchInput 
@@ -167,9 +170,10 @@ export function Navbar() {
           <ThemeToggle />
 
           {/* Cart */}
-          <button
-            onClick={handleCartClick}
-            className="relative rounded-full p-2 text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-100)] dark:hover:bg-[var(--neutral-800)]"
+          {client && (
+            <button
+              onClick={handleCartClick}
+              className="relative rounded-full p-2 text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-100)] dark:hover:bg-[var(--neutral-800)]"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -181,7 +185,7 @@ export function Navbar() {
                 {cartItemCount}
               </span>
             )}
-          </button>
+          </button> )}
 
           {/* User Menu */}
           {status === "authenticated" ? (

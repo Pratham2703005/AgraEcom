@@ -87,10 +87,10 @@ export default function ProductDetailPage({
   };
 
   // Check if product was updated within last 3 days
-  const isNewProduct = (updatedAt: Date) => {
+  const isNewProduct = (createdAt: Date) => {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-    return new Date(updatedAt) > threeDaysAgo;
+    return new Date(createdAt) > threeDaysAgo;
   };
 
   // Handle add to cart
@@ -127,9 +127,34 @@ export default function ProductDetailPage({
   };
 
   // Handle buy now
-  const handleBuyNow = () => {
-    // Implement checkout functionality
-    router.push('/checkout');
+  const handleBuyNow = async () => {
+    if (!product) return;
+    
+    try {
+      // First add the product to cart
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity
+        }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to process your request');
+        return;
+      }
+      
+      // Then redirect to cart page
+      router.push('/cart');
+    } catch (error) {
+      console.error('Error with buy now:', error);
+      toast.error('Failed to process your request. Please try again.');
+    }
   };
 
   // Calculate total price
@@ -227,7 +252,7 @@ export default function ProductDetailPage({
                       -{product.discount}% OFF
                     </span>
                   )}
-                  {isNewProduct(product.updatedAt) && (
+                  {isNewProduct(product.createdAt) && (
                     <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
                       NEW
                     </span>

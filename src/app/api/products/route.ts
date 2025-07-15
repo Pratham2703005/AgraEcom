@@ -69,17 +69,28 @@ export async function GET(request: Request) {
     }
 
     // Sort options
-    let orderBy: Record<string, unknown> = {};
+    let orderBy: Record<string, unknown>[] = [];
     switch (sort) {
       case "discount":
-        orderBy = { discount: "desc" };
+        orderBy = [
+          { discount: "desc" },
+          { createdAt: "desc" },
+          { id: "asc" }
+        ];
         break;
       case "demand":
-        orderBy = { demand: "desc" };
+        orderBy = [
+          { demand: "desc" },
+          { createdAt: "desc" },
+          { id: "asc" }
+        ];
         break;
       case "latest":
       default:
-        orderBy = { updatedAt: "desc" };
+        orderBy = [
+          { createdAt: "desc" },
+          { id: "asc" }
+        ];
         break;
     }
 
@@ -98,6 +109,9 @@ export async function GET(request: Request) {
     const totalProducts = await db.product.count({ where });
     const totalPages = Math.ceil(totalProducts / pageSize);
 
+    // Fix hasMore calculation
+    const hasMore = skip + products.length < totalProducts;
+
     console.log(`Found ${products.length} products for page ${page}. Total: ${totalProducts}, Total Pages: ${totalPages}`);
 
     return NextResponse.json({
@@ -107,7 +121,7 @@ export async function GET(request: Request) {
         pageSize,
         totalProducts,
         totalPages,
-        hasMore: page < totalPages,
+        hasMore,
       },
     });
   } catch (error) {

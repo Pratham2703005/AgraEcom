@@ -1,60 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Footer() {
-  const [email, setEmail] = useState("");
+  const [client, setClient] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle newsletter subscription
-    alert(`Thank you for subscribing with ${email}!`);
-    setEmail("");
-  };
+  
+
+  useEffect(() => {
+    setClient(true);
+  }, []);
 
   return (
     <footer className="bg-[var(--neutral-900)] text-white">
-      {/* Newsletter section */}
-      <div className="border-b border-[var(--neutral-700)] px-4 py-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div>
-              <h3 className="text-2xl font-bold">Join our newsletter</h3>
-              <p className="mt-2 text-[var(--neutral-300)]">
-                Stay updated with our latest products, offers, and beauty tips.
-              </p>
-            </div>
-            <div>
-              <form onSubmit={handleSubscribe} className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  className="input flex-grow bg-[var(--neutral-800)] text-white placeholder:text-[var(--neutral-400)] focus:ring-[var(--primary)]"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  suppressHydrationWarning
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      
+      {client && (
+        <>
+        
 
-      {/* Main footer content */}
       <div className="px-4 py-12">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
             {/* Brand column */}
             <div>
-              <h4 className="text-xl font-bold">AK Beauty</h4>
+              <h4 className="text-3xl font-bold">{process.env.NEXT_PUBLIC_APP_NAME}</h4>
               <p className="mt-4 text-sm text-[var(--neutral-300)]">
                 Discover the best in skincare and cosmetics. Our products are formulated with high-quality ingredients for all skin types.
               </p>
@@ -108,28 +78,28 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products?category=skincare" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Skincare
+                  <Link href="/products?search=facewash" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                    Facewash
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products?category=makeup" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Makeup
+                  <Link href="/products?search=oil" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                    Oil
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products?category=haircare" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Haircare
+                  <Link href="/products?search=kajal" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                    Kajal
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products?category=fragrance" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Fragrance
+                  <Link href="/products?search=sunscreen" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                    Sunscreen
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products?category=tools" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Tools & Accessories
+                  <Link href="/products?search=facecream" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                    Face Cream
                   </Link>
                 </li>
               </ul>
@@ -202,12 +172,11 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom footer */}
       <div className="border-t border-[var(--neutral-700)] px-4 py-6">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <p className="text-sm text-[var(--neutral-400)]">
-              &copy; {new Date().getFullYear()} AK Beauty. All rights reserved.
+              &copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME}. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-sm text-[var(--neutral-400)] hover:text-white">
@@ -223,6 +192,8 @@ export function Footer() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </footer>
   );
 } 

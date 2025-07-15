@@ -8,8 +8,8 @@ import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
-const CLOUDINARY_UPLOAD_PRESET = "akshop_products";
-const CLOUDINARY_CLOUD_NAME = "dxaymasp1";
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
 export default function NewBrandPage() {
   const { data: session, status } = useSession();
@@ -80,7 +80,7 @@ export default function NewBrandPage() {
       if (imageUrl && !imageFile) {
         const formData = new FormData();
         formData.append("file", imageUrl);
-        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET || "");
         
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
           method: "POST",
@@ -99,7 +99,7 @@ export default function NewBrandPage() {
       if (imageFile) {
         const formData = new FormData();
         formData.append("file", imageFile);
-        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET || "");
         
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
           method: "POST",

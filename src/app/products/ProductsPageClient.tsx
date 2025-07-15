@@ -69,18 +69,18 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Intersection observer for infinite scroll
   const observer = useRef<IntersectionObserver | null>(null);
-  const lastProductElementRef = useCallback((node: HTMLElement | null) => {
+  const lastProductRef = useCallback((node: HTMLElement | null) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        console.log('Loading more products, current page:', page);
+    observer.current = new window.IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && !loading) {
         setPage(prevPage => prevPage + 1);
       }
     }, { threshold: 0.1, rootMargin: '100px' });
     if (node) observer.current.observe(node);
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore]);
 
   // Fetch products from API
   useEffect(() => {
@@ -110,7 +110,12 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
         if (page === 1) {
           setProducts(data.products);
         } else {
-          setProducts(prev => [...prev, ...data.products]);
+          // Prevent duplicates by product id
+          setProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newProducts = data.products.filter((p: Product) => !existingIds.has(p.id));
+            return [...prev, ...newProducts];
+          });
         }
         
         setHasMore(data.pagination.hasMore);
@@ -134,11 +139,11 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
     setHasMore(true);
   }, [search, sort, brand]);
 
-  // Check if product was updated within last 3 days
-  const isNewProduct = (updatedAt: Date) => {
+  // Check if product was created within last 3 days
+  const isNewProduct = (createdAt: Date) => {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-    return new Date(updatedAt) > threeDaysAgo;
+    return new Date(createdAt) > threeDaysAgo;
   };
 
   // Handle search submission
@@ -313,13 +318,14 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
           <>
             {products.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-fr">
-                {products.map((product) => {
-                  // We'll use a separate observer element instead of attaching to the last product
+                {products.map((product, idx) => {
+                  const isLast = idx === products.length - 1;
                   return (
                     <Link
                       key={product.id}
                       href={`/products/${product.id}`}
                       className="group block h-full"
+                      ref={isLast ? lastProductRef : undefined}
                     >
                       <div className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
                         {/* Image Container */}
@@ -344,7 +350,7 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
                                 -{product.discount}%
                               </span>
                             )}
-                            {isNewProduct(product.updatedAt) && (
+                            {isNewProduct(product.createdAt) && (
                               <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
                                 NEW
                               </span>
@@ -435,7 +441,7 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
             {/* Intersection Observer Debug Element */}
             {hasMore && !loading && products.length > 0 && (
               <div 
-                ref={lastProductElementRef}
+                ref={lastProductRef}
                 className="h-10 flex items-center justify-center text-sm text-neutral-500 mt-8"
               >
                 Loading more products...

@@ -65,14 +65,12 @@ export async function GET(request: Request) {
     const brandModelSuggestions = await db.brand.findMany({
       where: {
         OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { slug: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } }
         ],
       },
       select: {
         id: true,
-        name: true,
-        slug: true,
+        name: true
       },
       take: 3, // Limit to 3 brand suggestions
     });
@@ -91,7 +89,6 @@ export async function GET(request: Request) {
         type: 'brand',
         id: brand.id,
         text: brand.name,
-        slug: brand.slug,
       })),
     ];
 

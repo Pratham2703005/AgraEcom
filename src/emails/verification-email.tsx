@@ -21,18 +21,18 @@ export const VerificationEmail = ({
   verificationLink,
   username,
 }: VerificationEmailProps) => {
-console.log("VERIFICATION EMAIL");
+  const siteName = process.env.NEXT_PUBLIC_APP_NAME || 'Agra Ecom';
   return (
     <Html>
       <Head />
-      <Preview>Verify your email address for AKShop</Preview>
+      <Preview>Verify your email address for {siteName}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={heading}>Email Verification</Heading>
           <Section>
             <Text style={text}>Hello {username},</Text>
             <Text style={text}>
-              Thank you for registering with AKShop. Please verify your email address by clicking the button below:
+              Thank you for registering with {siteName}. Please verify your email address by clicking the button below:
             </Text>
             <Button
               style={button}
@@ -55,7 +55,7 @@ console.log("VERIFICATION EMAIL");
               </Link>
             </Text>
             <Text style={footer}>
-              &copy; {new Date().getFullYear()} AKShop. All rights reserved.
+              &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
             </Text>
           </Section>
         </Container>

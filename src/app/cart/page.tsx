@@ -185,8 +185,9 @@ export default function CartPage() {
 
   // Handle checkout
   const handleCheckout = () => {
-    // Check if email is verified
-    const isEmailVerified = session?.user ? 'emailVerified' in session.user && session.user.emailVerified !== null : false;
+    const isEmailVerified = session?.user ? 
+    (session.user.isVerified === true || (session.user.emailVerified !== null && session.user.emailVerified !== undefined)) 
+    : false;
     
     if (!isEmailVerified) {
       toast.error("Please verify your email before placing an order");
@@ -195,10 +196,8 @@ export default function CartPage() {
     }
     
     setIsCheckingOut(true);
-    // Proceed with checkout
-    // For now, just redirect to a thank you page or show a message
-    toast.success("Checkout functionality coming soon!");
-    setIsCheckingOut(false);
+    // Redirect to checkout page
+    router.push('/checkout');
   };
 
   // Loading state while session is loading
@@ -288,7 +287,9 @@ export default function CartPage() {
   const totals = calculateTotals();
   
   // Check if email is verified
-  const isEmailVerified = session?.user ? 'emailVerified' in session.user && session.user.emailVerified !== null : false;
+  const isEmailVerified = session?.user ? 
+  (session.user.isVerified === true || (session.user.emailVerified !== null && session.user.emailVerified !== undefined)) 
+  : false;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">

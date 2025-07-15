@@ -4,13 +4,13 @@
  * @returns The URL of the uploaded image
  */
 export async function uploadToCloudinary(file: File): Promise<string> {
-   const CLOUDINARY_UPLOAD_PRESET = "akshop_products";
-   const CLOUDINARY_CLOUD_NAME = "dxaymasp1";
+   const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
+   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   try {
     // Create form data for the upload
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET || "");
 
     // Upload to Cloudinary
     const response = await fetch(

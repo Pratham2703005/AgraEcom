@@ -103,7 +103,11 @@ model Order {
   userId     String      @db.ObjectId
   status     OrderStatus @default(PENDING)
   total      Float
-  address    Address?
+  phone      String
+  address    String
+  note       String?
+  otp        String?
+  otpVerified Boolean    @default(false)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -114,10 +118,11 @@ model OrderItem {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   orderId   String  @db.ObjectId
   productId String  @db.ObjectId
-  quantity  Int
+  name      String
   price     Float
+  quantity  Int
+  image     String?
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
 }
 
 model Cart {
@@ -139,17 +144,6 @@ model CartItem {
   @@unique([cartId, productId])
 }
 
-model Address {
-  id         String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId    String  @unique @db.ObjectId
-  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  street     String
-  city       String
-  state      String
-  postalCode String
-  country    String
-}
-
 model Banner {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -168,8 +162,9 @@ enum Role {
 
 enum OrderStatus {
   PENDING
-  PROCESSING
   SHIPPED
   DELIVERED
   CANCELLED
+  FAILED
+  PARTIAL
 }
