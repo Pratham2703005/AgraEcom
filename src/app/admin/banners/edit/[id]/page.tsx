@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImageUpload from "@/components/ImageUpload";
 import BannerPreview from "@/components/BannerPreview";
 
 interface EditBannerPageProps {
-  params: Promise<{
+  params:{
     id: string;
-  }>;
+  };
 }
 
 export default function EditBannerPage({ params }: EditBannerPageProps) {
-  const { id } = use(params);
+  const { id } = params;
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

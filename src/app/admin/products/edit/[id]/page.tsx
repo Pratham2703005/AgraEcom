@@ -5,8 +5,9 @@ import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
 export default async function EditProductPage({ params }: { params: { id: string } }) {
+  const { id } = await params;
   const product = await db.product.findUnique({ 
-    where: { id: params.id },
+    where: { id: id },
     include: {
       brand: true
     }
