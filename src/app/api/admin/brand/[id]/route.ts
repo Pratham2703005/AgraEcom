@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // GET /api/admin/brand/[id] - Get a specific brand
 export async function GET(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -32,7 +32,7 @@ export async function GET(
 
 // DELETE /api/admin/brand/[id] - Delete a brand
 export async function DELETE(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

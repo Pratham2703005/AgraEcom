@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import { Toaster, toast } from 'react-hot-toast';
@@ -32,12 +32,12 @@ type Product = {
 };
 
 export default function ProductDetailPage({
-  context,
+  params,
 }: {
-  context: { params: { id: string } };
+  params: Promise<{ id: string }>;
 }) {
   
-  const { id } = context.params;
+  const  id  = use(params).id;
   const router = useRouter();
   
   const [product, setProduct] = useState<Product | null>(null);

@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 export async function GET(
-  request: Request,
-  context: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const id = params.id;
 
     const product = await db.product.findUnique({
       where: { id },
       include: {
-        brand: true
-      }
+        brand: true,
+      },
     });
 
     if (!product) {
@@ -30,4 +30,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

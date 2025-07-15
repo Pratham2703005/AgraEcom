@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImageUpload from "@/components/ImageUpload";
@@ -8,8 +8,8 @@ import BannerPreview from "@/components/BannerPreview";
 
 
 
-export default function EditBannerPage({ params }: {params: {id: string}}) {
-  const { id } = params;
+export default function EditBannerPage({ params }: {params: Promise<{id: string}>}) {
+  const { id } = use(params);
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
