@@ -8,8 +8,8 @@ import BannerPreview from "@/components/BannerPreview";
 
 
 
-export default function EditBannerPage({ params }: {params: {id: string}}) {
-  const { id } = params;
+export default function EditBannerPage({ context }: {context: {params: {id: string}}}) {
+  const { id } = context.params;
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
