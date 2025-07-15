@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+type Context = { params: Record<string, string> };
 
-export async function GET(request: NextRequest,  context: { params: { id: string } }) {
-  const {id} = context.params
+export async function GET(request: NextRequest,  context:Context) {
+  const id = context.params.id
   try {
     const session = await getServerSession(authOptions);
     
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest,  context: { params: { id: string
   }
 }
 
-export async function PATCH(request: NextRequest,   context: { params: { id: string } }) {
-  const {id} = context.params
+export async function PATCH(request: NextRequest,   context: Context) {
+  const id = context.params.id
   try {
     const session = await getServerSession(authOptions);
     
@@ -75,8 +76,8 @@ export async function PATCH(request: NextRequest,   context: { params: { id: str
   }
 }
 
-export async function DELETE(request: NextRequest,  context: { params: { id: string } }) {
-  const {id} = context.params
+export async function DELETE(request: NextRequest,  context:Context) {
+  const id = context.params.id
   try {
     const session = await getServerSession(authOptions);
     
