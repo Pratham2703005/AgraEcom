@@ -6,13 +6,9 @@ import Link from "next/link";
 import ImageUpload from "@/components/ImageUpload";
 import BannerPreview from "@/components/BannerPreview";
 
-interface EditBannerPageProps {
-  params:{
-    id: string;
-  };
-}
 
-export default function EditBannerPage({ params }: EditBannerPageProps) {
+
+export default function EditBannerPage({ params }: {params: {id: string}}) {
   const { id } = params;
   const router = useRouter();
   const [title, setTitle] = useState("");
