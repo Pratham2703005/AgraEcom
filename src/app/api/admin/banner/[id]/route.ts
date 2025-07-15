@@ -3,13 +3,9 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
 
-export async function GET(request: NextRequest, { params }: Params) {
+
+export async function GET(request: NextRequest, { params }: {params:{id:string}}) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -37,7 +33,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: {params:{id:string}}) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -78,7 +74,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: {params:{id:string}}) {
   try {
     const session = await getServerSession(authOptions);
     
