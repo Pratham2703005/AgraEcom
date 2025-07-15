@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+type PageProps = Promise<{id: string}>
 
-
-export async function GET(request: NextRequest, { params }: {params:{id:string}}) {
+export async function GET(request: NextRequest, props : {params : PageProps}) {
+  const {id} = await props.params
   try {
     const session = await getServerSession(authOptions);
     
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest, { params }: {params:{id:string}}
     
     const banner = await db.banner.findUnique({
       where: {
-        id: params.id,
+        id,
       },
     });
     
@@ -33,7 +34,8 @@ export async function GET(request: NextRequest, { params }: {params:{id:string}}
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: {params:{id:string}}) {
+export async function PATCH(request: NextRequest, props : {params : PageProps}) {
+  const {id} = await props.params
   try {
     const session = await getServerSession(authOptions);
     
@@ -53,7 +55,7 @@ export async function PATCH(request: NextRequest, { params }: {params:{id:string
     
     const banner = await db.banner.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         title,
@@ -74,7 +76,8 @@ export async function PATCH(request: NextRequest, { params }: {params:{id:string
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: {params:{id:string}}) {
+export async function DELETE(request: NextRequest,props : {params : PageProps}) {
+  const {id} = await props.params
   try {
     const session = await getServerSession(authOptions);
     
@@ -84,7 +87,7 @@ export async function DELETE(request: NextRequest, { params }: {params:{id:strin
     
     await db.banner.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
     
