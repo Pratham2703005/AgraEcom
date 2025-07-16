@@ -5,16 +5,5 @@
       "src": "next.config.js",
       "use": "@vercel/next"
     }
-  ],
-  "env": {
-    "NEXTAUTH_URL": "https://agraecom.vercel.app",
-    "NEXTAUTH_SECRET": "your-secret-here",
-    "DATABASE_URL": "your-db-url",
-    "GOOGLE_CLIENT_ID": "your-client-id",
-    "GOOGLE_CLIENT_SECRET": "your-client-secret",
-    "RESEND_API_KEY": "your-resend-api-key",
-    "NEXT_PUBLIC_APP_NAME": "your-app-name",
-    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "your-cloud-name",
-    "NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET": "your-preset"
-  }
+  ]
 }
