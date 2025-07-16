@@ -11,7 +11,7 @@ const statusUpdateSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  context : { params: { id: string } }
+  {params}: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +28,7 @@ export async function POST(
       );
     }
 
-    const orderId = context.params.id;
+    const orderId = (await params).id;
     const body = await request.json();
 
     // Validate request body

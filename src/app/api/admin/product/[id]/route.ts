@@ -21,11 +21,11 @@ const productUpdateSchema = z.object({
 // GET a single product
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const product = await db.product.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!product) {
@@ -45,7 +45,7 @@ export async function GET(
 // PUT to update a product
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -74,7 +74,7 @@ export async function PUT(
     
     // Update the product
     const product = await db.product.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: validatedData
     });
 
@@ -99,7 +99,7 @@ export async function PUT(
 // PATCH to update specific fields (like stock)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -115,7 +115,7 @@ export async function PATCH(
     // For stock management, we only allow updating piecesLeft
     if (Object.keys(body).length === 1 && 'piecesLeft' in body) {
       const product = await db.product.update({
-        where: { id: params.id },
+        where: { id: (await params).id },
         data: { piecesLeft: body.piecesLeft },
       });
 
@@ -138,7 +138,7 @@ export async function PATCH(
 // DELETE a product
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -150,7 +150,7 @@ export async function DELETE(
     }
 
     await db.product.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "Product deleted successfully" });
