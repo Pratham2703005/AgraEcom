@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { Link } from "lucide-react";
 
 type OrderItem = {
   id: string;
@@ -229,12 +230,12 @@ function AdminOrdersPageContent() {
                 </div>
                 <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-100 dark:border-neutral-700">
                   <div className="flex flex-wrap gap-3">
-                    {/* <Link 
+                     <Link
                       href={`/admin/orders/${order.id}`}
                       className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400 font-medium"
                     >
                       View Details
-                    </Link> */}
+                    </Link> 
                   </div>
                 </div>
               </div>
