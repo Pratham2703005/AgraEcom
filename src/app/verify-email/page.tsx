@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   
@@ -147,5 +147,13 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <VerifyEmailPageContent />
+    </Suspense>
   );
 } 

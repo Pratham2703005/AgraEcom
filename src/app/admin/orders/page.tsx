@@ -1,9 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ type Order = {
   };
 };
 
-export default function AdminOrdersPage() {
+function AdminOrdersPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -229,12 +229,12 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-100 dark:border-neutral-700">
                   <div className="flex flex-wrap gap-3">
-                    <Link 
+                    {/* <Link 
                       href={`/admin/orders/${order.id}`}
                       className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400 font-medium"
                     >
                       View Details
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               </div>
@@ -243,5 +243,13 @@ export default function AdminOrdersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading orders...</div>}>
+      <AdminOrdersPageContent />
+    </Suspense>
   );
 } 

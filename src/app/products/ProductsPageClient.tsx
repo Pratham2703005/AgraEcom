@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -57,7 +58,7 @@ interface ProductsPageClientProps {
   brand: string;
 }
 
-export default function ProductsPageClient({ search, brand }: ProductsPageClientProps) {
+function ProductsPageClientContent({ search, brand }: ProductsPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sort = searchParams.get("sort") || "latest";
@@ -451,5 +452,13 @@ export default function ProductsPageClient({ search, brand }: ProductsPageClient
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPageClient(props: ProductsPageClientProps) {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <ProductsPageClientContent {...props} />
+    </Suspense>
   );
 } 

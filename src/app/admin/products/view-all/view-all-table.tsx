@@ -69,78 +69,8 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const productsPerPage = 20;
   
-  // Set up intersection observer for infinite scrolling
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastProductElementRef = useCallback((node: HTMLElement | null) => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        console.log('Intersection observed, loading more products, current page:', page);
-        setPage(prevPage => prevPage + 1);
-      }
-    }, { 
-      threshold: 0.1,  // Lower threshold to trigger earlier
-      rootMargin: '200px' // Increased margin to detect earlier
-    });
-    if (node) {
-      console.log('Observer attached to element');
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore, page]);
-
-  // Initialize with first page of products and reset when component mounts
-  useEffect(() => {
-    // Reset everything when component mounts
-    setProducts([]);
-    setDisplayedProducts([]);
-    setPage(1);
-    setHasMore(true);
-    setIsInitialLoading(true);
-    setSearchQuery("");
-    
-    // Clean up any existing observer
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-    
-    console.log("Component mounted, loading first page of products");
-    // Load first page of products
-    loadProducts(1, true);
-    
-    // Clean up observer on unmount
-    return () => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Load products when page changes
-  useEffect(() => {
-    if (page > 1) {
-      console.log(`Page changed to ${page}, loading more products`);
-      loadProducts(page, false);
-    }
-  }, [page]);
-
-  // Filter products based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setDisplayedProducts(products);
-    } else {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const filtered = products.filter(
-        (product) => 
-          product.name.toLowerCase().includes(lowerCaseQuery) || 
-          (product.brand && product.brand.name.toLowerCase().includes(lowerCaseQuery))
-      );
-      setDisplayedProducts(filtered);
-    }
-  }, [searchQuery, products]);
-
   // Function to load products from API
-  const loadProducts = async (pageToLoad: number, isInitial: boolean) => {
+  const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean) => {
     // Prevent duplicate loading of the same page
     if (loading) {
       console.log(`Already loading page ${pageToLoad}, skipping`);
@@ -200,26 +130,97 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
           
           return [...prev, ...uniqueNewProducts];
         });
-        
-        // Only update displayed products if not searching
-        if (!searchQuery.trim()) {
-          setDisplayedProducts(prev => {
-            const existingIds = new Set(prev.map(p => p.id));
-            const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
-            return [...prev, ...uniqueNewProducts];
-          });
-        }
+        setDisplayedProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
+          return [...prev, ...uniqueNewProducts];
+        });
+      }
+      
+      if (isInitial) {
+        setIsInitialLoading(false);
       }
     } catch (error) {
-      console.error("Error loading products:", error);
-      setHasMore(false);
-    } finally {
+      setMessage({ type: "error", text: (error as Error).message });
       setLoading(false);
       if (isInitial) {
         setIsInitialLoading(false);
       }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [loading, productsPerPage]);
+
+useEffect(() => {
+    // Reset everything when component mounts
+    setProducts([]);
+    setDisplayedProducts([]);
+    setPage(1);
+    setHasMore(true);
+    setIsInitialLoading(true);
+    setSearchQuery("");
+    
+    // Clean up any existing observer
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+    
+    console.log("Component mounted, loading first page of products");
+    // Load first page of products
+    loadProducts(1, true);
+    
+    // Clean up observer on unmount
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [loadProducts]);
+
+  // Set up intersection observer for infinite scrolling
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastProductElementRef = useCallback((node: HTMLElement | null) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        console.log('Intersection observed, loading more products, current page:', page);
+        setPage(prevPage => prevPage + 1);
+      }
+    }, { 
+      threshold: 0.1,  // Lower threshold to trigger earlier
+      rootMargin: '200px' // Increased margin to detect earlier
+    });
+    if (node) {
+      console.log('Observer attached to element');
+      observer.current.observe(node);
+    }
+  }, [loading, hasMore, page]);
+
+  // Initialize with first page of products and reset when component mounts
+  
+  // Load products when page changes
+  useEffect(() => {
+    if (page > 1) {
+      console.log(`Page changed to ${page}, loading more products`);
+      loadProducts(page, false);
+    }
+  }, [page, loadProducts]);
+
+  // Filter products based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setDisplayedProducts(products);
+    } else {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      const filtered = products.filter(
+        (product) => 
+          product.name.toLowerCase().includes(lowerCaseQuery) || 
+          (product.brand && product.brand.name.toLowerCase().includes(lowerCaseQuery))
+      );
+      setDisplayedProducts(filtered);
+    }
+  }, [searchQuery, products]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) {

@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function VerificationPendingPage() {
+function VerificationPendingPageContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   
@@ -133,5 +134,13 @@ export default function VerificationPendingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerificationPendingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <VerificationPendingPageContent />
+    </Suspense>
   );
 } 
