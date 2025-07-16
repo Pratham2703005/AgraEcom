@@ -4,9 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const {id} = params
+    const id = (await params).id
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "ADMIN") {
