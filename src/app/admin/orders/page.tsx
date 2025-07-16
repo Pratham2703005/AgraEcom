@@ -8,7 +8,8 @@ import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { Link } from "lucide-react";
+import Link from "next/link";
+
 
 type OrderItem = {
   id: string;
