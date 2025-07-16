@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -238,8 +239,8 @@ export default function OrdersPage() {
                     <li key={item.id} className="py-3 flex justify-between">
                       <div className="flex items-center gap-3">
                         {item.image && (
-                          <div className="w-10 h-10 rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-700 flex-shrink-0">
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          <div className="w-10 h-10 rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-700 flex-shrink-0 relative">
+                            <Image src={item.image} alt={item.name} fill sizes="40px" className="object-cover" />
                           </div>
                         )}
                         <div>
@@ -284,4 +285,4 @@ export default function OrdersPage() {
       </div>
     </div>
   );
-} 
+}

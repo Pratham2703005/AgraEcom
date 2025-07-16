@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, useRouter } from "next/navigation";
 import { Toaster, toast } from 'react-hot-toast';
 import { formatProductName } from "@/lib/utils";
@@ -232,11 +233,15 @@ export default function ProductDetailPage({
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-md">
                 {product.images && product.images.length > 0 ? (
-                  <img
-                    src={product.images[0]}
-                    alt={formatProductName(product)}
-                    className="h-full w-full object-cover"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={product.images[0]}
+                      alt={formatProductName(product)}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
                     <svg className="h-16 w-16 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,11 +273,15 @@ export default function ProductDetailPage({
                       key={index}
                       className="aspect-square cursor-pointer overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-blue-500 transition-colors"
                     >
-                      <img
-                        src={image}
-                        alt={`${formatProductName(product)} - Image ${index + 1}`}
-                        className="h-full w-full object-cover"
-                      />
+                      <div className="relative h-full w-full">
+                        <Image
+                          src={image}
+                          alt={`${formatProductName(product)} - Image ${index + 1}`}
+                          fill
+                          sizes="(max-width: 768px) 20vw, 10vw"
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -457,4 +466,4 @@ export default function ProductDetailPage({
       </div>
     </>
   );
-} 
+}

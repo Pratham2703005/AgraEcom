@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -453,8 +454,8 @@ export default function AdminOrderDetailPage() {
                         <td className="py-4 px-4">
                           <div className="flex items-center">
                             {item.image && (
-                              <div className="w-12 h-12 rounded-md overflow-hidden bg-white dark:bg-neutral-800 flex-shrink-0 mr-4">
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                              <div className="w-12 h-12 rounded-md overflow-hidden bg-white dark:bg-neutral-800 flex-shrink-0 mr-4 relative">
+                                <Image src={item.image} alt={item.name} fill sizes="48px" className="object-cover" />
                               </div>
                             )}
                             <div>
@@ -646,4 +647,4 @@ export default function AdminOrderDetailPage() {
       </div>
     </div>
   );
-} 
+}

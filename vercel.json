@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/admin/banners/new", "dest": "server.js" },
+    { "src": "/admin/brands/view-all", "dest": "server.js" },
+    { "src": "/admin/brands/new", "dest": "server.js" },
+    { "src": "/(.*)", "dest": "server.js" }
+  ],
+  "env": {
+    "NEXTAUTH_URL": "${NEXTAUTH_URL}",
+    "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET}",
+    "DATABASE_URL": "${DATABASE_URL}",
+    "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+    "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+    "RESEND_API_KEY": "${RESEND_API_KEY}",
+    "NEXT_PUBLIC_APP_NAME": "${NEXT_PUBLIC_APP_NAME}",
+    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}",
+    "NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET": "${NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET}"
+  }
+}

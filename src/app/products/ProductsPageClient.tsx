@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import SearchInput from "@/components/SearchInput";
 import { formatProductName } from "@/lib/utils";
@@ -332,11 +333,15 @@ function ProductsPageClientContent({ search, brand }: ProductsPageClientProps) {
                         {/* Image Container */}
                         <div className="relative aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-900">
                           {product.images && product.images.length > 0 ? (
-                            <img
-                              src={product.images[0]}
-                              alt={formatProductName(product)}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={product.images[0]}
+                                alt={formatProductName(product)}
+                                fill
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
                               <svg className="w-12 h-12 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -461,4 +466,4 @@ export default function ProductsPageClient(props: ProductsPageClientProps) {
       <ProductsPageClientContent {...props} />
     </Suspense>
   );
-} 
+}

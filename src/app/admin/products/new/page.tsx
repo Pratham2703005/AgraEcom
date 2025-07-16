@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeftIcon, PlusIcon } from "lucide-react";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
@@ -308,10 +309,12 @@ export default function NewProductPage() {
                 <div className="grid grid-cols-3 gap-3">
                   {images.map((url, index) => (
                     <div key={index} className="relative aspect-square rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700 group">
-                      <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                      <div className="relative w-full h-full">
+                        <Image src={url} alt={`Product ${index + 1}`} fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover" />
+                      </div>
                       <button
                         type="button"
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         onClick={() => handleRemoveImage(index)}
                       >
                         ×

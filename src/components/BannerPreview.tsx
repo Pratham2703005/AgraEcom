@@ -1,5 +1,7 @@
 "use client";
 
+import Image from 'next/image';
+
 interface BannerPreviewProps {
   title: string;
   description: string | null;
@@ -25,9 +27,11 @@ export default function BannerPreview({
         {bannerImg ? (
           <div className="w-full h-full relative">
             <div className="w-full h-full">
-              <img 
+              <Image 
                 src={bannerImg} 
                 alt={title || "Banner preview"} 
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -83,9 +87,11 @@ export default function BannerPreview({
             {bannerImg ? (
               <div className="w-full h-full relative">
                 <div className="w-full h-full">
-                  <img 
+                  <Image 
                     src={bannerImg} 
                     alt={title || "Banner preview"} 
+                    fill
+                    sizes="100vw"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -111,4 +117,4 @@ export default function BannerPreview({
       </div>
     </div>
   );
-} 
+}

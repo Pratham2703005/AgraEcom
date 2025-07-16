@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatProductName } from "@/lib/utils";
@@ -308,11 +309,15 @@ export default function CartPage() {
                       <div className="flex-shrink-0 mb-4 sm:mb-0">
                         <div className="relative h-24 w-24 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
                           {item.product.images && item.product.images.length > 0 ? (
-                            <img
-                              src={item.product.images[0]}
-                              alt={formatCartItemName(item)}
-                              className="h-full w-full object-cover"
-                            />
+                            <div className="relative h-full w-full">
+                              <Image
+                                src={item.product.images[0]}
+                                alt={formatCartItemName(item)}
+                                fill
+                                sizes="96px"
+                                className="object-cover"
+                              />
+                            </div>
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                               <svg className="h-8 w-8 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

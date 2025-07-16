@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Edit, Trash2, Search } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -344,11 +345,15 @@ useEffect(() => {
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
                         {product.images && product.images.length > 0 ? (
-                          <img
-                            src={product.images[0]}
-                            alt={formatProductName(product)}
-                            className="h-12 w-12 object-cover rounded-md"
-                          />
+                          <div className="relative h-12 w-12">
+                            <Image
+                              src={product.images[0]}
+                              alt={formatProductName(product)}
+                              fill
+                              sizes="48px"
+                              className="object-cover rounded-md"
+                            />
+                          </div>
                         ) : (
                           <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
                             <span className="text-neutral-400 dark:text-neutral-500">No image</span>
@@ -396,11 +401,15 @@ useEffect(() => {
                     <tr key={product.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700">
                       <td className="px-4 py-3 whitespace-nowrap">
                         {product.images && product.images.length > 0 ? (
-                          <img
-                            src={product.images[0]}
-                            alt={formatProductName(product)}
-                            className="h-12 w-12 object-cover rounded-md"
-                          />
+                          <div className="relative h-12 w-12">
+                            <Image
+                              src={product.images[0]}
+                              alt={formatProductName(product)}
+                              fill
+                              sizes="48px"
+                              className="object-cover rounded-md"
+                            />
+                          </div>
                         ) : (
                           <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
                             <span className="text-neutral-400 dark:text-neutral-500">No image</span>

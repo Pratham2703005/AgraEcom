@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import './BannerSlider.css'
@@ -103,13 +104,13 @@ export default function BannerSlider() {
           <SwiperSlide key={banner.id} className="bg-neutral-100 dark:bg-neutral-800">
             {banner.link ? (
               <Link href={banner.link} className="block w-full h-full relative">
-                <div className="w-full h-full">
-                  <img 
+                  <Image 
                     src={banner.bannerImg} 
                     alt={banner.title} 
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
                   />
-                </div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/70 to-transparent text-white">
                   <h2 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 drop-shadow-md">{banner.title}</h2>
                   {banner.description && (
@@ -119,13 +120,13 @@ export default function BannerSlider() {
               </Link>
             ) : (
               <div className="w-full h-full relative">
-                <div className="w-full h-full">
-                  <img 
+                  <Image 
                     src={banner.bannerImg} 
                     alt={banner.title} 
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
                   />
-                </div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/70 to-transparent text-white">
                   <h2 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 drop-shadow-md">{banner.title}</h2>
                   {banner.description && (

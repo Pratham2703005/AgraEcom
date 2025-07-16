@@ -15,6 +15,22 @@ const nextConfig: NextConfig = {
       // Add other domains if needed
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/admin/banners/new',
+        destination: '/admin/banners/new',
+      },
+      {
+        source: '/admin/brands/new',
+        destination: '/admin/brands/new',
+      },
+      {
+        source: '/admin/brands/view-all',
+        destination: '/admin/brands/view-all',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

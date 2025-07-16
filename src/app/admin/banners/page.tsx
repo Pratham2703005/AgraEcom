@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import Link from "next/link";
+import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -66,10 +67,12 @@ export default async function BannersManagementPage() {
                   <tr key={banner.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="h-16 w-32 relative">
-                        <img 
+                        <Image 
                           src={banner.bannerImg} 
                           alt={banner.title} 
-                          className="h-full w-full object-cover rounded"
+                          fill
+                          sizes="128px"
+                          className="object-cover rounded"
                         />
                       </div>
                     </td>
@@ -131,4 +134,4 @@ export default async function BannersManagementPage() {
       </div>
     </div>
   );
-} 
+}
