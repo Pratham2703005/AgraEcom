@@ -1,14 +1,18 @@
 import ProductsPageClient from "./ProductsPageClient";
 
-interface SearchParams {
-  search?: string;
-  sort?: string;
-  brand?: string;
+interface SearchPageProps {
+  searchParams: Promise<{
+    search?: string;
+    sort?: string;
+    brand?: string;
+  }>;
 }
 
-export default async function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
-  const search = (await searchParams)?.search || "";
-  const brand = (await searchParams)?.brand || "";
-  
+export default async function ProductsPage({ searchParams }: SearchPageProps) {
+  const resolvedSearchParams = await searchParams;
+
+  const search = resolvedSearchParams.search || "";
+  const brand = resolvedSearchParams.brand || "";
+
   return <ProductsPageClient search={search} brand={brand} />;
 }
