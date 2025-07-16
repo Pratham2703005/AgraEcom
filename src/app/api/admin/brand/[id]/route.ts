@@ -6,9 +6,10 @@ import { db } from "@/lib/db";
 // GET /api/admin/brand/[id] - Get a specific brand
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id 
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "ADMIN") {
@@ -16,7 +17,7 @@ export async function GET(
     }
     
     const brand = await db.brand.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
     
     if (!brand) {
@@ -33,8 +34,9 @@ export async function GET(
 // DELETE /api/admin/brand/[id] - Delete a brand
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const id = (await params).id;
   try {
     const session = await getServerSession(authOptions);
     
@@ -44,7 +46,7 @@ export async function DELETE(
     
     // Check if brand is associated with any products
     const productsWithBrand = await db.product.count({
-      where: { brandId: params.id },
+      where: { brandId: id },
     });
     
     if (productsWithBrand > 0) {
@@ -55,7 +57,7 @@ export async function DELETE(
     }
     
     await db.brand.delete({
-      where: { id: params.id },
+      where: { id },
     });
     
     return NextResponse.json({ message: "Brand deleted successfully" });
