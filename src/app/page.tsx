@@ -36,7 +36,7 @@ export default async function Home() {
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-[var(--primary-light)] to-[var(--secondary-light)]">
-        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-20 z-[-1]"></div>
+       
         <div className="mx-auto flex flex-col items-center justify-center px-4 text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-6xl text-neutral-950">
             Beauty That Speaks <span className="text-[var(--primary-dark)]">For You</span>
@@ -53,7 +53,7 @@ export default async function Home() {
               Shop Now
             </Link>
             <Link
-              href="/about"
+              href="/company#about"
               className="btn btn-outline btn-lg !text-neutral-950 hover:!text-neutral-100  !border-neutral-950 hover:!bg-neutral-800"
             >
               Learn More
@@ -61,59 +61,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* <section className="relative min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-5 z-[-1]"></div>
-        
-        <div className="absolute inset-0 overflow-hidden z-[-1]">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="mx-auto max-w-7xl px-4 text-center z-10">
-         
-          
-          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl bg-gradient-to-r from-neutral-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
-            Beauty That Speaks
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">For You</span>
-          </h1>
-          
-          <p className="mb-8 max-w-2xl mx-auto text-xl text-neutral-600 leading-relaxed">
-            Discover premium skincare and cosmetics that enhance your natural beauty.
-            <br />
-            <span className="text-blue-600 font-medium">Formulated with care for all skin types.</span>
-          </p>
-          
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0 sm:justify-center mb-12">
-            <Link
-              href="/products"
-              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
-            >
-              <span className="absolute inset-0 bg-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              Shop Now
-              <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-            
-            <Link
-              href="/about"
-              className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-neutral-900 bg-white border-2 border-neutral-200 rounded-full hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Learn More
-              <svg className="w-5 h-5 ml-2 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </Link>
-          </div>
-
-          
-        </div>
-      </section> */}
-
-      
-
 
       {/* Brands Section */}
       <BrandsSectionWrapper />
