@@ -11,10 +11,10 @@ export default async function ViewAllProductsPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center">
-        <Link href="/admin" className="px-4 py-2 rounded-lg text-neutral-700 dark:text-neutral-100 mb-6">
-          <ArrowLeftIcon className="w-8 h-8" />
+        <Link href="/admin" className="px-2 sm:px-4 py-2 rounded-lg text-neutral-700 dark:text-neutral-100 mb-6">
+          <ArrowLeftIcon className="size-6" />
         </Link>
-        <h1 className="text-3xl font-bold mb-6">All Products</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">All Products</h1>
       </div>
       
       <div className="bg-white shadow-sm overflow-hidden">

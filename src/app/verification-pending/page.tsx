@@ -62,8 +62,8 @@ function VerificationPendingPageContent() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-neutral-800">
+        <h1 className="text-2xl font-bold text-center text-neutral-900 dark:text-white">
           Verify Your Email
         </h1>
         
@@ -85,15 +85,15 @@ function VerificationPendingPageContent() {
             </svg>
           </div>
           
-          <p className="text-center text-gray-600 dark:text-gray-300 mb-2">
+          <p className="text-center text-neutral-600 dark:text-neutral-300 mb-2">
             We&apos;ve sent a verification email to:
           </p>
           
-          <p className="text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
+          <p className="text-center font-semibold text-neutral-800 dark:text-neutral-200 mb-4">
             {email || "your email address"}
           </p>
           
-          <p className="text-center text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-center text-neutral-600 dark:text-neutral-300 mb-6">
             Please check your inbox and click on the verification link to complete your registration.
             If you don&apos;t see the email, please check your spam folder.
           </p>

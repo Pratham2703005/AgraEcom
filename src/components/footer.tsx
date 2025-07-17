@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 export function Footer() {
   const [client, setClient] = useState(false);
 
-  
-
   useEffect(() => {
     setClient(true);
   }, []);
@@ -110,27 +108,18 @@ export function Footer() {
               <h4 className="text-lg font-semibold">Company</h4>
               <ul className="mt-4 space-y-2">
                 <li>
-                  <Link href="/about" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/company#about" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/careers" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/company#careers" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Careers
                   </Link>
                 </li>
+                
                 <li>
-                  <Link href="/blog" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/press" className="text-sm text-[var(--neutral-300)] hover:text-white">
-                    Press
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/company#contact" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Contact Us
                   </Link>
                 </li>
@@ -142,27 +131,27 @@ export function Footer() {
               <h4 className="text-lg font-semibold">Help</h4>
               <ul className="mt-4 space-y-2">
                 <li>
-                  <Link href="/customer-service" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/help#customer-service" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Customer Service
                   </Link>
                 </li>
                 <li>
-                  <Link href="/track-order" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/help#track-order" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Track Order
                   </Link>
                 </li>
                 <li>
-                  <Link href="/returns" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/help#returns" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Returns & Exchanges
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shipping" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/help#shipping" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     Shipping Information
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="text-sm text-[var(--neutral-300)] hover:text-white">
+                  <Link href="/help#faq" className="text-sm text-[var(--neutral-300)] hover:text-white">
                     FAQ
                   </Link>
                 </li>
@@ -179,13 +168,13 @@ export function Footer() {
               &copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME}. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <Link href="/privacy" className="text-sm text-[var(--neutral-400)] hover:text-white">
+              <Link href="/company#privacy" className="text-sm text-[var(--neutral-400)] hover:text-white">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-sm text-[var(--neutral-400)] hover:text-white">
+              <Link href="/company#terms" className="text-sm text-[var(--neutral-400)] hover:text-white">
                 Terms of Service
               </Link>
-              <Link href="/accessibility" className="text-sm text-[var(--neutral-400)] hover:text-white">
+              <Link href="/company#accessibility" className="text-sm text-[var(--neutral-400)] hover:text-white">
                 Accessibility
               </Link>
             </div>

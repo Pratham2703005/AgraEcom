@@ -81,21 +81,20 @@ export default function ViewAllBrandsPage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-        <div className="mb-6 flex">
-          <Link 
-            href="/admin" 
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            <ArrowLeftIcon className="size-8 mr-2" />
-          </Link>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">All Brands</h1>
-        </div>
+          <div className="flex ">
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <ArrowLeftIcon className="size-6 mr-4" />
+            </Link>
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">All Brands</h1>
+          </div>
           <Link 
             href="/admin/brands/new"
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Brand
+            <Plus className="h-4 w-4" />
           </Link>
         </div>
         

@@ -70,16 +70,26 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const productsPerPage = 20;
   
+  // Use ref to track if we're already loading to prevent race conditions
+  const isLoadingRef = useRef(false);
+  const loadedPagesRef = useRef(new Set<number>());
+  
   // Function to load products from API
-  const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean) => {
-    // Prevent duplicate loading of the same page
-    if (loading) {
-      console.log(`Already loading page ${pageToLoad}, skipping`);
+  const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean = false) => {
+    // Prevent duplicate loading
+    if (isLoadingRef.current || loadedPagesRef.current.has(pageToLoad)) {
+      console.log(`Already loading or loaded page ${pageToLoad}, skipping`);
       return;
     }
     
+    isLoadingRef.current = true;
+    loadedPagesRef.current.add(pageToLoad);
+    
     if (pageToLoad === 1) {
+      setProducts([]);
       setDisplayedProducts([]);
+      loadedPagesRef.current.clear();
+      loadedPagesRef.current.add(1);
     }
     
     setLoading(true);
@@ -105,10 +115,6 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
       if (newProducts.length === 0) {
         console.log("No products returned, setting hasMore to false");
         setHasMore(false);
-        setLoading(false);
-        if (isInitial) {
-          setIsInitialLoading(false);
-        }
         return;
       }
       
@@ -137,76 +143,62 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
           return [...prev, ...uniqueNewProducts];
         });
       }
-      
-      if (isInitial) {
-        setIsInitialLoading(false);
-      }
     } catch (error) {
+      console.error("Error loading products:", error);
       setMessage({ type: "error", text: (error as Error).message });
-      setLoading(false);
-      if (isInitial) {
-        setIsInitialLoading(false);
-      }
+      // Remove from loaded pages on error so it can be retried
+      loadedPagesRef.current.delete(pageToLoad);
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
+      if (isInitial) {
+        setIsInitialLoading(false);
+      }
     }
-  }, [loading, productsPerPage]);
+  }, [productsPerPage]);
 
-useEffect(() => {
-    // Reset everything when component mounts
-    setProducts([]);
-    setDisplayedProducts([]);
-    setPage(1);
-    setHasMore(true);
-    setIsInitialLoading(true);
-    setSearchQuery("");
-    
-    // Clean up any existing observer
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-    
+  // Initialize with first page of products on mount
+  useEffect(() => {
     console.log("Component mounted, loading first page of products");
-    // Load first page of products
     loadProducts(1, true);
     
-    // Clean up observer on unmount
+    // Cleanup function
     return () => {
       if (observer.current) {
         observer.current.disconnect();
       }
     };
-  }, [loadProducts]);
+  }, []); // Empty dependency array to run only once
 
   // Set up intersection observer for infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastProductElementRef = useCallback((node: HTMLElement | null) => {
-    if (loading) return;
+    if (loading || !hasMore) return;
     if (observer.current) observer.current.disconnect();
+    
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        console.log('Intersection observed, loading more products, current page:', page);
+      if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
+        console.log('Intersection observed, loading next page:', page + 1);
         setPage(prevPage => prevPage + 1);
       }
     }, { 
-      threshold: 0.1,  // Lower threshold to trigger earlier
-      rootMargin: '200px' // Increased margin to detect earlier
+      threshold: 0.1,
+      rootMargin: '200px'
     });
+    
     if (node) {
       console.log('Observer attached to element');
       observer.current.observe(node);
     }
   }, [loading, hasMore, page]);
 
-  // Initialize with first page of products and reset when component mounts
-  
-  // Load products when page changes
+  // Load products when page changes (but not on initial mount)
   useEffect(() => {
     if (page > 1) {
       console.log(`Page changed to ${page}, loading more products`);
       loadProducts(page, false);
     }
-  }, [page, loadProducts]);
+  }, [page]); // Remove loadProducts from dependency array
 
   // Filter products based on search query
   useEffect(() => {
@@ -336,123 +328,66 @@ useEffect(() => {
           <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {displayedProducts.length > 0 ? (
               displayedProducts.map((product, index) => {
-                if (displayedProducts.length === index + 1) {
-                  return (
-                    <tr 
-                      key={product.id} 
-                      ref={lastProductElementRef}
-                      className="hover:bg-neutral-50 dark:hover:bg-neutral-700"
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {product.images && product.images.length > 0 ? (
-                          <div className="relative h-12 w-12">
-                            <Image
-                              src={product.images[0]}
-                              alt={formatProductName(product)}
-                              fill
-                              sizes="48px"
-                              className="object-cover rounded-md"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
-                            <span className="text-neutral-400 dark:text-neutral-500">No image</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100">
-                        {formatProductName(product)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        ₹{product.mrp.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        {product.discount}%
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        ₹{product.price.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex space-x-2">
-                          <Link
-                            href={`/admin/products/edit/${product.id}`}
-                            className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
-                            title="Edit"
-                          >
-                            <Edit size={18} />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            disabled={isDeleting[product.id]}
-                            className="p-1 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                const isLast = displayedProducts.length === index + 1;
+                return (
+                  <tr 
+                    key={product.id} 
+                    ref={isLast ? lastProductElementRef : null}
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {product.images && product.images.length > 0 ? (
+                        <div className="relative h-12 w-12">
+                          <Image
+                            src={product.images[0]}
+                            alt={formatProductName(product)}
+                            fill
+                            sizes="48px"
+                            className="object-cover rounded-md"
+                          />
                         </div>
-                      </td>
-                    </tr>
-                  );
-                } else {
-                  return (
-                    <tr key={product.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700">
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {product.images && product.images.length > 0 ? (
-                          <div className="relative h-12 w-12">
-                            <Image
-                              src={product.images[0]}
-                              alt={formatProductName(product)}
-                              fill
-                              sizes="48px"
-                              className="object-cover rounded-md"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
-                            <span className="text-neutral-400 dark:text-neutral-500">No image</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100">
-                        {formatProductName(product)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        ₹{product.mrp.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        {product.discount}%
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        ₹{product.price.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex space-x-2">
-                          <Link
-                            href={`/admin/products/edit/${product.id}`}
-                            className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
-                            title="Edit"
-                          >
-                            <Edit size={18} />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            disabled={isDeleting[product.id]}
-                            className="p-1 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                      ) : (
+                        <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
+                          <span className="text-neutral-400 dark:text-neutral-500 text-xs">No image</span>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                }
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100">
+                      {formatProductName(product)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                      ₹{product.mrp.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                      {product.discount}%
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                      ₹{product.price.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                      {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex space-x-2">
+                        <Link
+                          href={`/admin/products/edit/${product.id}`}
+                          className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          disabled={isDeleting[product.id]}
+                          className="p-1 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
               })
             ) : (
               <tr>
@@ -479,17 +414,6 @@ useEffect(() => {
       {!hasMore && displayedProducts.length > 0 && !loading && (
         <div className="p-4 text-center text-sm text-neutral-500">
           No more products to load
-        </div>
-      )}
-      
-      {/* Invisible element to trigger intersection observer */}
-      {hasMore && !loading && displayedProducts.length > 0 && (
-        <div 
-          ref={lastProductElementRef}
-          className="h-20 flex items-center justify-center"
-          id="infinite-scroll-trigger"
-        >
-          <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800"></div>
         </div>
       )}
     </div>

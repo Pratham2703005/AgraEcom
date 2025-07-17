@@ -210,11 +210,11 @@ export default function NewProductPage() {
         <div className="mb-8 flex">
           <Link
             href="/admin"
-            className="px-6 py-2 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors font-medium"
+            className="px-2 sm:px-6 py-2 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors font-medium"
           >
-            <ArrowLeftIcon className="w-4 h-4" />
+            <ArrowLeftIcon className="size-6" />
           </Link>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Add New Product</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">Add New Product</h1>
         </div>
 
         {/* Alerts */}
@@ -236,41 +236,42 @@ export default function NewProductPage() {
             
             {/* Image Upload from URL */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Upload Image from URL
-              </label>
-              <div className="flex">
-                <input
-                  type="url"
-                  className="flex-1 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
-                  placeholder="https://example.com/image.jpg"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  disabled={urlUploading}
-                />
-                <button
-                  type="button"
-                  className="px-4 py-3 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 disabled:opacity-50 flex items-center"
-                  onClick={handleUrlUpload}
-                  disabled={!imageUrl || urlUploading}
-                >
-                  {urlUploading ? (
-                    <div className="flex items-center gap-1">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Adding</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <PlusIcon className="w-4 h-4" />
-                      <span>Add</span>
-                    </div>
-                  )}
-                </button>
-              </div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-                Enter an image URL and click Add to upload
-              </p>
-            </div>
+  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+    Upload Image from URL
+  </label>
+  <div className="flex flex-col sm:flex-row w-full">
+    <input
+      type="url"
+      className="w-full sm:flex-1 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
+      placeholder="https://example.com/image.jpg"
+      value={imageUrl}
+      onChange={(e) => setImageUrl(e.target.value)}
+      disabled={urlUploading}
+    />
+    <button
+      type="button"
+      className="w-full sm:w-auto px-4 py-3 bg-blue-500 text-white rounded-b-lg sm:rounded-r-lg sm:rounded-bl-none hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center"
+      onClick={handleUrlUpload}
+      disabled={!imageUrl || urlUploading}
+    >
+      {urlUploading ? (
+        <div className="flex items-center gap-1">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>Adding</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1">
+          <PlusIcon className="w-4 h-4" />
+          <span>Add</span>
+        </div>
+      )}
+    </button>
+  </div>
+  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+    Enter an image URL and click Add to upload
+  </p>
+</div>
+
             
             {/* Traditional File Upload Area */}
             <div className="mb-6">

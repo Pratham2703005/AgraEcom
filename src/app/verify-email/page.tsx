@@ -70,15 +70,15 @@ function VerifyEmailPageContent() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-neutral-800">
+        <h1 className="text-2xl font-bold text-center text-neutral-900 dark:text-white">
           Email Verification
         </h1>
 
         {verificationState.isLoading && (
           <div className="flex flex-col items-center space-y-4">
             <div className="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            <p className="text-center text-gray-600 dark:text-gray-300">
+            <p className="text-center text-neutral-600 dark:text-neutral-300">
               {verificationState.message}
             </p>
           </div>
@@ -102,7 +102,7 @@ function VerifyEmailPageContent() {
                 ></path>
               </svg>
             </div>
-            <p className="text-center text-gray-600 dark:text-gray-300">
+            <p className="text-center text-neutral-600 dark:text-neutral-300">
               {verificationState.message}
             </p>
             <div className="flex justify-center pt-4">
@@ -133,7 +133,7 @@ function VerifyEmailPageContent() {
                 ></path>
               </svg>
             </div>
-            <p className="text-center text-gray-600 dark:text-gray-300">
+            <p className="text-center text-neutral-600 dark:text-neutral-300">
               {verificationState.message}
             </p>
             <div className="flex justify-center pt-4 space-x-4">

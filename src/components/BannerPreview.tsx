@@ -19,7 +19,7 @@ export default function BannerPreview({
 }: BannerPreviewProps) {
   return (
     <div className="w-full mb-4">
-      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+      <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
         Preview (how it will appear on the products page)
       </h3>
       
@@ -51,7 +51,7 @@ export default function BannerPreview({
             )}
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+          <div className="w-full h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -61,7 +61,7 @@ export default function BannerPreview({
       </div>
       
       <div className="mt-2 flex justify-between">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs text-neutral-500 dark:text-neutral-400">
           {bannerImg ? 'Image loaded' : 'No image'}
         </div>
         <button 
@@ -79,10 +79,10 @@ export default function BannerPreview({
       
       {/* Mobile Preview (hidden by default) */}
       <div id="banner-preview-mobile" className="hidden mt-4">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+        <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">
           Mobile Preview
         </h3>
-        <div className="w-full max-w-[320px] mx-auto border border-gray-300 dark:border-gray-700 rounded-lg p-2 bg-white dark:bg-neutral-900">
+        <div className="w-full max-w-[320px] mx-auto border border-neutral-300 dark:border-neutral-700 rounded-lg p-2 bg-white dark:bg-neutral-900">
           <div className="relative w-full h-40 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
             {bannerImg ? (
               <div className="w-full h-full relative">
@@ -105,7 +105,7 @@ export default function BannerPreview({
                 </div>
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+              <div className="w-full h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>

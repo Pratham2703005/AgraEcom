@@ -85,13 +85,13 @@ export default function ImageUpload({
     onImageUploaded('');
   };
   
-  const containerClasses = `${width} ${height} ${aspectRatio} overflow-hidden bg-gray-100 dark:bg-gray-800 relative ${
+  const containerClasses = `${width} ${height} ${aspectRatio} overflow-hidden bg-neutral-100 dark:bg-neutral-800 relative ${
     variant === 'round' ? 'rounded-full' : 'rounded-md'
   }`;
   
   return (
     <div className="flex flex-col items-center">
-      <div className="relative mb-4">
+      <div className="relative mb-4 w-full">
         <div className={containerClasses}>
           {isUploading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
@@ -110,7 +110,7 @@ export default function ImageUpload({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Camera className="h-16 w-16 text-gray-400" />
+              <Camera className="h-16 w-16 text-neutral-400" />
             </div>
           )}
         </div>

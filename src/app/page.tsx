@@ -73,13 +73,13 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-4 text-center z-10">
          
           
-          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
+          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl bg-gradient-to-r from-neutral-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
             Beauty That Speaks
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">For You</span>
           </h1>
           
-          <p className="mb-8 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed">
+          <p className="mb-8 max-w-2xl mx-auto text-xl text-neutral-600 leading-relaxed">
             Discover premium skincare and cosmetics that enhance your natural beauty.
             <br />
             <span className="text-blue-600 font-medium">Formulated with care for all skin types.</span>
@@ -99,7 +99,7 @@ export default async function Home() {
             
             <Link
               href="/about"
-              className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-900 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-neutral-900 bg-white border-2 border-neutral-200 rounded-full hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Learn More
               <svg className="w-5 h-5 ml-2 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,9 +129,9 @@ export default async function Home() {
                 href={`/products/${product.id}`}
                 className="group block"
               >
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-gray-100 h-full flex flex-col">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 border border-neutral-100 h-full flex flex-col">
                   {/* Fixed aspect ratio image container */}
-                  <div className="relative aspect-square overflow-hidden bg-gray-100">
+                  <div className="relative aspect-square overflow-hidden bg-neutral-100">
                     {product.images && product.images.length > 0 ? (
                       <Image
                         src={product.images[0]}
@@ -141,8 +141,8 @@ export default async function Home() {
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute inset-0 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
+                        <svg className="w-12 h-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
@@ -164,12 +164,12 @@ export default async function Home() {
                   {/* Fixed height content container */}
                   <div className="p-4 flex flex-col flex-1 bg-white dark:bg-neutral-800">
                     {/* Product name - fixed height with line clamp */}
-                    <h3 className="font-semibold text-gray-900 dark:text-neutral-100  group-hover:text-blue-600 transition-colors duration-200 text-lg leading-[1.75rem] mb-1 line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="font-semibold text-neutral-900 dark:text-neutral-100  group-hover:text-blue-600 transition-colors duration-200 text-lg leading-[1.75rem] mb-1 line-clamp-2 min-h-[2.5rem]">
                       {formatProductName(product)}
                     </h3>
 
                     {/* Brand - fixed height */}
-                    <p className="text-sm text-gray-500 dark:text-neutral-400 mb-3 min-h-[1.5rem]">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3 min-h-[1.5rem]">
                       {product.brand ? product.brand.name : 'No Brand'}
                     </p>
 
@@ -177,11 +177,11 @@ export default async function Home() {
                     <div className="mt-auto">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-gray-900 dark:text-neutral-100">
+                          <span className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                             ₹{product.price.toFixed(2)}
                           </span>
                           {product.discount > 0 && (
-                            <span className="text-sm text-gray-400 dark:text-neutral-400 line-through">
+                            <span className="text-sm text-neutral-400 dark:text-neutral-400 line-through">
                               ₹{product.mrp.toFixed(2)}
                             </span>
                           )}

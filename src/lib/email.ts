@@ -81,8 +81,8 @@ export const sendVerificationEmail = async (email: string, name: string) => {
     // Send the email
     const { data, error } = await resend.emails.send({
       from: 'Agra Ecom <onboarding@resend.dev>',
-      // to: email,
-      to:'pk2732004@gmail.com',
+      to: email,
+      // to:'pk2732004@gmail.com',
       subject: 'Verify your email address',
       html: await emailHtml,
     });

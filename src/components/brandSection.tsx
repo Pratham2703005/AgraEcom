@@ -33,7 +33,7 @@ const BrandCard = memo(({ brand }: { brand: Brand }) => (
     className="group flex flex-col items-center justify-center w-full"
     scroll={false}
   >
-    <div className="relative w-24 h-24 mb-3 rounded-full bg-white shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-300 flex items-center justify-center overflow-hidden">
+    <div className="relative w-24 h-24 mb-3 rounded-full bg-white shadow-sm border border-neutral-100 group-hover:shadow-md transition-all duration-300 flex items-center justify-center overflow-hidden">
       <Image
         width={120}
         height={120}
@@ -44,7 +44,7 @@ const BrandCard = memo(({ brand }: { brand: Brand }) => (
         priority={true}
       />
     </div>
-    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-gray-100 text-center leading-tight transition-colors duration-300">
+    <span className="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 dark:text-neutral-300 dark:group-hover:text-neutral-100 text-center leading-tight transition-colors duration-300">
       {brand.name}
     </span>
   </Link>
