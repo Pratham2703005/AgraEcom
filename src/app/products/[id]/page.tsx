@@ -40,7 +40,7 @@ export default function ProductDetailPage({
   
   const  id  = use(params).id;
   const router = useRouter();
-  
+  const [selectedImg , setSelectedImg] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +63,7 @@ export default function ProductDetailPage({
         
         const data = await response.json();
         setProduct(data.product);
+        setSelectedImg(data.product.images[0]);
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("Failed to load product. Please try again later.");
@@ -235,7 +236,7 @@ export default function ProductDetailPage({
                 {product.images && product.images.length > 0 ? (
                   <div className="relative h-full w-full">
                     <Image
-                      src={product.images[0]}
+                      src={selectedImg || product.images[0]}
                       alt={formatProductName(product)}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
@@ -269,9 +270,11 @@ export default function ProductDetailPage({
               {product.images && product.images.length > 1 && (
                 <div className="grid grid-cols-5 gap-2">
                   {product.images.map((image, index) => (
-                    <div
+                    <button
                       key={index}
                       className="aspect-square cursor-pointer overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-blue-500 transition-colors"
+                      onMouseEnter={() => setSelectedImg(image)}
+                      onMouseLeave={() => setSelectedImg(product.images[0])}
                     >
                       <div className="relative h-full w-full">
                         <Image
@@ -282,7 +285,7 @@ export default function ProductDetailPage({
                           className="object-cover"
                         />
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
