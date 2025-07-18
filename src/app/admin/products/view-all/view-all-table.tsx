@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Edit, Trash2, Search } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Prisma } from "@prisma/client";
 
 type Brand = {
   id: string;
@@ -21,7 +22,7 @@ type Product = {
   brand?: Brand | null;
   weight: string | null;
   mrp: number;
-  offers: Record<string, number>; // quantity string (e.g. "1", "2"), discount number (e.g. 10)
+  offers: Prisma.JsonValue; // quantity string (e.g. "1", "2"), discount number (e.g. 10)
   demand: number;
   piecesLeft: number | null;
   description: string | null;
@@ -357,11 +358,11 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
                       ₹{product.mrp.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      {product.offers && product.offers["1"] !== undefined ? `${product.offers["1"]}%` : "0%"}
+                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        {product.offers && (product.offers as Record<string, number>)["1"] !== undefined ? `${(product.offers as Record<string, number>)["1"]}%` : "0%"}
                     </td>
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      ₹{(product.mrp * (1 - (product.offers["1"] || 0) / 100)).toFixed(2)}
+                      ₹{(product.mrp * (1 - ((product.offers as Record<string, number>)["1"] || 0) / 100)).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
                       {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
