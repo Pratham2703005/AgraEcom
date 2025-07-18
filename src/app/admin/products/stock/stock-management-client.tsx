@@ -53,17 +53,17 @@ const ProductSkeleton = () => (
 );
 
 export default function StockManagementClient({ initialProducts }: { initialProducts: Product[] }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts || []);
   const [stockAdjustments, setStockAdjustments] = useState<Record<string, StockAdjustment>>({});
   const [offerAdjustments, setOfferAdjustments] = useState<Record<string, OfferAdjustment>>({});
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
   const [editingOffers, setEditingOffers] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const productsPerPage = 20;
@@ -95,18 +95,14 @@ export default function StockManagementClient({ initialProducts }: { initialProd
     }
     // Reset pagination when search query changes
     setPage(1);
-    setHasMore(true);
   }, [searchQuery, products]);
 
   // Load more products when page changes
   useEffect(() => {
-    setLoading(true);
     const start = 0;
     const end = page * productsPerPage;
-    const newDisplayedProducts = filteredProducts.slice(start, end);
-    setDisplayedProducts(newDisplayedProducts);
-    setHasMore(newDisplayedProducts.length < filteredProducts.length);
-    setLoading(false);
+    setDisplayedProducts(filteredProducts.slice(start, end));
+    setHasMore(end < filteredProducts.length);
   }, [filteredProducts, page]);
 
   // Stock change handling
@@ -438,7 +434,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
               return (
                 <div
                   key={product.id}
-                  ref={isLast ? lastProductElementRef : undefined}
+                  ref={isLast && hasMore ? lastProductElementRef : undefined}
                   className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden bg-white dark:bg-neutral-800"
                 >
                   {/* Accordion Header */}
@@ -463,7 +459,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                         )}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium text-neutral-900 dark:text-neutral-100">
+                        <h3 className="text-lg sm:text-xl font-medium text-neutral-900 dark:text-neutral-100">
                           {formatProductName(product)}
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
@@ -484,8 +480,8 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                   
                   {/* Accordion Content */}
                   {isExpanded && (
-                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="sm:p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6">
                         {/* Stock Management Section */}
                         <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm">
                           <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Stock Management</h4>
@@ -627,7 +623,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                                   <div className="px-3 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md flex-1">
                                     <div className="text-xs text-neutral-500 dark:text-neutral-400">Price</div>
                                     <div className="font-medium text-neutral-900 dark:text-neutral-100">
-                                      ₹{calculatePrice(product.mrp, discount).toFixed(2)}
+                                      ₹{calculatePrice(product.mrp, Number(discount)).toFixed(2)}
                                     </div>
                                   </div>
                                   

@@ -6,8 +6,22 @@ import { ArrowLeftIcon } from "lucide-react";
 export default async function StockManagementPage() {
   // Fetch all products with minimal data needed for stock management
   const products = await db.product.findMany({
-    include: {
-      brand: true,
+    select: {
+      id: true,
+      name: true,
+      mrp: true,
+      offers: true,
+      images: true,
+      weight: true,
+      piecesLeft: true,
+      brand: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          imageUrl: true,
+        }
+      },
     },
     orderBy: {
       updatedAt: 'desc',
