@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { PlusIcon, Trash2 } from "lucide-react";
+import { Prisma } from "@prisma/client";
 
 const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -29,7 +30,7 @@ type Product = {
   name: string;
   weight?: string | null;
   mrp: number;
-  offers: Record<string, number>;
+  offers: Prisma.JsonValue; // This should be Record<string, number>, not JsonValue
   demand?: number | null;
   description?: string | null;
   piecesLeft?: number | null;

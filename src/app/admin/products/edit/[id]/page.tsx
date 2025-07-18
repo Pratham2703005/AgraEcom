@@ -28,7 +28,7 @@ export default async function EditProductPage(props : {params : PageProps}) {
             <ArrowLeftIcon className="w-5 h-5" />
           </Link>
           <h1 className="text-2xl font-bold">Edit Product</h1>
-        </div>
+        </div> 
       </div>
       <EditProductForm product={product} />
     </div>
