@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn.shopify.com',
+        hostname: 'cdn.tirabeauty.com',
       },
       // Add other domains if needed
     ],
