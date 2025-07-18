@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeftIcon, PlusIcon, Trash2 } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, Trash2, RefreshCw } from "lucide-react";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
 const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
@@ -368,6 +368,7 @@ export default function NewProductPage() {
                   ))}
                   
                 </select>
+                <div className="flex items-center gap-2">
                 <a
                   href="/admin/brands/new"
                   target="_blank"
@@ -375,6 +376,23 @@ export default function NewProductPage() {
                 >
                   + Add New Brand
                 </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoadingBrands(true);
+                    fetch('/api/brands')
+                      .then(res => res.json())
+                      .then(data => setBrands(data))
+                      .catch((err) => setError('Failed to reload brands ' + err))
+                      .finally(() => setLoadingBrands(false));
+                  }}
+                  disabled={loadingBrands}
+                  className="flex items-center gap-1 px-2 py-1 text-sm text-blue-500 hover:text-blue-700 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingBrands ? 'animate-spin' : ''}`} />
+                    Reload
+                  </button>
+                </div>
                 {loadingBrands && (
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                     Loading brands...

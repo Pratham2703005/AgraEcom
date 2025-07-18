@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Search, CheckCircle, XCircle, ChevronDown, ChevronUp, PlusCircle, Trash2, Edit } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Prisma } from "@prisma/client";
 
 type Brand = {
   id: string;
@@ -21,7 +22,7 @@ type Product = {
   weight: string | null;
   images: string[];
   mrp: number;
-  offers: Record<string, number>;
+  offers: Prisma.JsonValue;
   piecesLeft: number | null;
 };
 
@@ -157,7 +158,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
           ...prev,
           [productId]: {
             productId,
-            offers: { ...product.offers },
+            offers: { ...(product.offers as Record<string, number>) },
             status: "pending"
           }
         }));
@@ -220,7 +221,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
           ...prev,
           [productId]: {
             productId,
-            offers: { ...product.offers },
+            offers: { ...(product.offers as Record<string, number>) },
             status: "pending"
           }
         }));
@@ -275,8 +276,8 @@ export default function StockManagementClient({ initialProducts }: { initialProd
           ...prev,
           [productId]: {
             ...prev[productId],
-            offers: { ...currentProduct.offers },
-            status: "cancelled"
+                offers: { ...(currentProduct.offers as Record<string, number>) },
+                status: "cancelled"
           }
         }));
       }
@@ -468,7 +469,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                         <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                           {product.weight && <span>Weight: {product.weight}</span>}
                           <span>MRP: ₹{product.mrp.toFixed(2)}</span>
-                          <span>Base Discount: {product.offers["1"] || 0}%</span>
+                          <span>Base Discount: {product.offers && (product.offers as Record<string, number>)["1"] || 0}%</span>
                         </div>
                       </div>
                     </div>
