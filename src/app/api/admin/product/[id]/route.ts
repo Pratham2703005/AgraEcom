@@ -8,8 +8,7 @@ import { z } from "zod";
 const productUpdateSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   mrp: z.coerce.number().min(0, "MRP must be a positive number").optional(),
-  discount: z.coerce.number().min(0, "Discount must be a positive number").optional(),
-  price: z.coerce.number().min(0, "Price must be a positive number").optional(),
+  offers: z.record(z.string(), z.coerce.number()).optional(),
   images: z.array(z.string()).min(1, "At least one image is required").optional(),
   brandId: z.string().min(1, "Brand is required").optional(),
   weight: z.string().optional(),
@@ -17,7 +16,7 @@ const productUpdateSchema = z.object({
   piecesLeft: z.coerce.number().min(0).optional(),
   description: z.string().optional()
 });
-
+ 
 // GET a single product
 export async function GET(
   request: Request,
@@ -112,24 +111,34 @@ export async function PATCH(
 
     const body = await request.json();
     
-    // For stock management, we only allow updating piecesLeft
-    if (Object.keys(body).length === 1 && 'piecesLeft' in body) {
+    const updateData: Record<string, number | Record<string, number>> = {};
+    
+    if (Object.prototype.hasOwnProperty.call(body, 'piecesLeft')) {
+      updateData.piecesLeft = body.piecesLeft;
+    }
+    
+    if (Object.prototype.hasOwnProperty.call(body, 'offers')) {
+      updateData.offers = body.offers;
+    }
+    
+    if (Object.keys(updateData).length > 0) {
+      
       const product = await db.product.update({
         where: { id: (await params).id },
-        data: { piecesLeft: body.piecesLeft },
+        data: updateData,
       });
 
       return NextResponse.json(product);
     } else {
       return NextResponse.json(
-        { error: "Only stock updates are allowed with PATCH" },
+        { error: "Invalid update request" },
         { status: 400 }
       );
     }
   } catch (error) {
-    console.error("Error updating product stock:", error);
+    console.error("Update error:", error);
     return NextResponse.json(
-      { error: "Failed to update product stock" },
+      { error: "Update operation failed" },
       { status: 500 }
     );
   }
@@ -161,4 +170,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-} 
+}

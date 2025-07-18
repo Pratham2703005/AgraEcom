@@ -5,8 +5,7 @@ import { z } from "zod";
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   mrp: z.coerce.number().min(0, "MRP must be a positive number"),
-  discount: z.coerce.number().min(0, "Discount must be a positive number").default(0),
-  price: z.coerce.number().min(0, "Price must be a positive number"),
+  offers: z.record(z.string(), z.coerce.number()).default({"1": 0}),
   images: z.array(z.string()).min(1, "At least one image is required"),
   brandId: z.string().min(1, "Brand is required"),
   weight: z.string().optional(),

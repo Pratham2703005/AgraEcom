@@ -20,8 +20,7 @@ type Product = {
   id: string;
   name: string;
   mrp: number;
-  discount: number;
-  price: number;
+  offers: Record<string, number>;
   images: string[];
   brand?: Brand | null;
   weight?: string | null;
@@ -159,11 +158,38 @@ export default function ProductDetailPage({
     }
   };
 
+  // Get sorted offer quantities
+  const getSortedOfferQuantities = () => {
+    if (!product || !product.offers) return [];
+    return Object.keys(product.offers)
+      .map(Number)
+      .sort((a, b) => a - b);
+  };
+
+  // Calculate price with offers
+  const calculatePrice = (qty: number) => {
+    if (!product) return 0;
+    // Find the applicable offer for this quantity
+    const quantities = getSortedOfferQuantities();
+    let applicableOffer = "1"; // Default to offer for quantity 1
+    
+    for (const q of quantities) {
+      if (qty >= q) {
+        applicableOffer = q.toString();
+      } else {
+        break;
+      }
+    }
+    
+    const discountPercent = product.offers[applicableOffer] || 0;
+    return product.mrp * (1 - discountPercent / 100);
+  };
+
   // Calculate total price
   const calculateTotal = () => {
     if (!product) return { price: 0, mrp: 0 };
     return {
-      price: product.price * quantity,
+      price: calculatePrice(quantity) * quantity,
       mrp: product.mrp * quantity
     };
   };
@@ -253,9 +279,9 @@ export default function ProductDetailPage({
 
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
-                  {product.discount > 0 && (
+                  {product.offers && product.offers["1"] > 0 && (
                     <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                      -{product.discount}% OFF
+                      -{product.offers["1"]}% OFF
                     </span>
                   )}
                   {isNewProduct(product.createdAt) && (
@@ -299,9 +325,9 @@ export default function ProductDetailPage({
 
               <div className="mb-4 flex items-center">
                 <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    ₹{product.price.toFixed(2)}
+                    ₹{calculatePrice(quantity).toFixed(2)}
                 </span>
-                {product.discount > 0 && (
+                {product.offers["1"] > 0 && (
                   <span className="ml-3 text-lg text-neutral-400 dark:text-neutral-500 line-through">
                     ₹{product.mrp.toFixed(2)}
                   </span>
@@ -343,8 +369,43 @@ export default function ProductDetailPage({
                 </div>
               )}
 
-              {/* Quantity selector */}
+              {/* Offers and quantity selector */}
               <div className="mb-6">
+                <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Available Offers</h2>
+                
+                {/* Offer tabs */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {getSortedOfferQuantities().map((qty) => {
+                    const offerValue = product.offers[qty.toString()];
+                    const isDisabled = product.piecesLeft !== null && 
+                                    product.piecesLeft !== undefined && 
+                                    qty > product.piecesLeft;
+                    const isSelected = quantity === qty;
+                    
+                    return (
+                      <button
+                        key={qty}
+                        onClick={() => {
+                          if (!isDisabled) setQuantity(qty);
+                        }}
+                        disabled={isDisabled}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isDisabled ? "opacity-50 cursor-not-allowed bg-neutral-200 dark:bg-neutral-700 text-neutral-500" :
+                          isSelected ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25" :
+                          "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-semibold">{qty} {qty > 1 ? 'units' : 'unit'}</span>
+                          {offerValue > 0 && (
+                            <span className="text-xs">{offerValue}% off</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Quantity</h2>
                 <div className="flex h-12 w-36 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 shadow-sm">
                   <button
@@ -402,9 +463,9 @@ export default function ProductDetailPage({
                   <span>Price ({quantity} {quantity > 1 ? 'items' : 'item'})</span>
                   <span>₹{totals.mrp.toFixed(2)}</span>
                 </div>
-                {product.discount > 0 && (
+                {Object.keys(product.offers).length > 0 && product.offers["1"] > 0 && (
                   <div className="flex justify-between text-sm text-green-600 dark:text-green-400 mb-1">
-                    <span>Discount ({product.discount}%)</span>
+                    <span>Discount (varies by quantity)</span>
                     <span>-₹{(totals.mrp - totals.price).toFixed(2)}</span>
                   </div>
                 )}

@@ -22,8 +22,7 @@ type Product = {
   id: string;
   name: string;
   mrp: number;
-  discount: number;
-  price: number;
+  offers: Record<string, number>;
   images: string[];
   brand?: Brand | null;
   weight?: string | null;
@@ -351,9 +350,10 @@ function ProductsPageClientContent({ search, brand }: ProductsPageClientProps) {
                           )}
                           
                           <div className="absolute top-2 left-2 flex flex-col gap-1">
-                            {product.discount > 0 && (
+                            {product.offers && Object.keys(product.offers).length > 0 && 
+                              product.offers["1"] > 0 && (
                               <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                -{product.discount}%
+                                -{product.offers["1"]}%
                               </span>
                             )}
                             {isNewProduct(product.createdAt) && (
@@ -398,9 +398,9 @@ function ProductsPageClientContent({ search, brand }: ProductsPageClientProps) {
                           <div className="flex items-center justify-between mt-auto">
                             <div className="flex items-center gap-2">
                               <span className="text-lg font-bold text-neutral-900 dark:text-white">
-                              ₹{product.price.toFixed(2)}
+                              ₹{(product.mrp * (1 - (product.offers["1"] || 0) / 100)).toFixed(2)}
                               </span>
-                              {product.discount > 0 ? (
+                              {product.offers["1"] > 0 ? (
                                 <span className="text-sm text-neutral-400 line-through">
                                   ₹{product.mrp.toFixed(2)}
                                 </span>

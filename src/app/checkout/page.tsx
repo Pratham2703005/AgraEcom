@@ -37,7 +37,7 @@ type CartItem = {
     name: string;
     price: number;
     mrp: number;
-    discount: number;
+    offers: Record<string, number>;
     brand?: { id: string; name: string; slug: string; imageUrl: string } | null;
     weight: string | null;
     images: string[];
@@ -115,6 +115,29 @@ export default function CheckoutPage() {
     }
   }, [session, form]);
 
+  // Helper function to calculate price with offers based on quantity
+  const calculatePriceWithOffers = (product: CartItem['product'], quantity: number) => {
+    if (!product || !product.offers) return product.mrp;
+    
+    // Get all available quantity thresholds
+    const quantities = Object.keys(product.offers)
+      .map(Number)
+      .sort((a, b) => a - b);
+    
+    // Find the highest applicable discount for this quantity
+    let applicableOffer = "1"; // Default to offer for quantity 1
+    for (const q of quantities) {
+      if (quantity >= q) {
+        applicableOffer = q.toString();
+      } else {
+        break;
+      }
+    }
+    
+    const discountPercent = product.offers[applicableOffer] || 0;
+    return product.mrp * (1 - discountPercent / 100);
+  };
+
   // Calculate cart totals
   const calculateTotals = () => {
     if (!cart || cart.items.length === 0) {
@@ -127,7 +150,7 @@ export default function CheckoutPage() {
     );
 
     const total = cart.items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
+      (sum, item) => sum + calculatePriceWithOffers(item.product, item.quantity) * item.quantity,
       0
     );
 
@@ -269,11 +292,11 @@ export default function CheckoutPage() {
                       {formatCartItemName(item)}
                     </p>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      Qty: {item.quantity} × ₹{item.product.price.toFixed(2)}
+                      Qty: {item.quantity} × ₹{calculatePriceWithOffers(item.product, item.quantity).toFixed(2)}
                     </p>
                   </div>
                   <p className="font-medium text-neutral-800 dark:text-neutral-200">
-                    ₹{(item.quantity * item.product.price).toFixed(2)}
+                    ₹{(calculatePriceWithOffers(item.product, item.quantity) * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -400,4 +423,4 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
-} 
+}

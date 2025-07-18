@@ -21,8 +21,7 @@ type Product = {
   brand?: Brand | null;
   weight: string | null;
   mrp: number;
-  discount: number;
-  price: number;
+  offers: Record<string, number>; // quantity string (e.g. "1", "2"), discount number (e.g. 10)
   demand: number;
   piecesLeft: number | null;
   description: string | null;
@@ -319,8 +318,8 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Image</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Product Name</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">MRP</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Discount</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Price</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Base Discount</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Sale Price</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Stock</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-200">Actions</th>
             </tr>
@@ -359,10 +358,10 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
                       ₹{product.mrp.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      {product.discount}%
+                      {product.offers && product.offers["1"] !== undefined ? `${product.offers["1"]}%` : "0%"}
                     </td>
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      ₹{product.price.toFixed(2)}
+                      ₹{(product.mrp * (1 - (product.offers["1"] || 0) / 100)).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
                       {product.piecesLeft !== null ? product.piecesLeft : "N/A"}

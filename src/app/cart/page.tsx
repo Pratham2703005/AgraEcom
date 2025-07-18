@@ -25,7 +25,7 @@ type CartItem = {
     name: string;
     price: number;
     mrp: number;
-    discount: number;
+    offers: Record<string, number>;
     brand?: Brand | null;
     weight: string | null;
     images: string[];
@@ -161,6 +161,29 @@ export default function CartPage() {
     }
   };
 
+  // Helper function to calculate price with offers based on quantity
+  const calculatePriceWithOffers = (product: CartItem['product'], quantity: number) => {
+    if (!product || !product.offers) return product.mrp;
+    
+    // Get all available quantity thresholds
+    const quantities = Object.keys(product.offers)
+      .map(Number)
+      .sort((a, b) => a - b);
+    
+    // Find the highest applicable discount for this quantity
+    let applicableOffer = "1"; // Default to offer for quantity 1
+    for (const q of quantities) {
+      if (quantity >= q) {
+        applicableOffer = q.toString();
+      } else {
+        break;
+      }
+    }
+    
+    const discountPercent = product.offers[applicableOffer] || 0;
+    return product.mrp * (1 - discountPercent / 100);
+  };
+
   // Calculate cart totals
   const calculateTotals = () => {
     if (!cart || cart.items.length === 0) {
@@ -173,7 +196,7 @@ export default function CartPage() {
     );
 
     const total = cart.items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
+      (sum, item) => sum + calculatePriceWithOffers(item.product, item.quantity) * item.quantity,
       0
     );
 
@@ -353,11 +376,11 @@ export default function CartPage() {
                           <div>
                             <div className="flex items-center mb-2">
                               <span className="text-lg font-medium text-blue-600 dark:text-blue-400">
-                              ₹{item.product.price.toFixed(2)}
+                                ₹{calculatePriceWithOffers(item.product, item.quantity).toFixed(2)}
                               </span>
-                              {item.product.discount > 0 && (
+                              {item.product.offers && item.product.offers["1"] > 0 && (
                                 <span className="ml-2 text-sm text-neutral-400 dark:text-neutral-500 line-through">
-                                ₹{item.product.mrp.toFixed(2)}
+                                  ₹{item.product.mrp.toFixed(2)}
                                 </span>
                               )}
                             </div>
@@ -398,7 +421,7 @@ export default function CartPage() {
                               Subtotal
                             </div>
                             <div className="text-lg font-medium text-neutral-800 dark:text-neutral-100">
-                              ₹{(item.product.price * item.quantity).toFixed(2)}
+                              ₹{(calculatePriceWithOffers(item.product, item.quantity) * item.quantity).toFixed(2)}
                             </div>
                           </div>
                         </div>

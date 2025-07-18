@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeftIcon, PlusIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, Trash2 } from "lucide-react";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
 const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
@@ -16,6 +16,13 @@ type Brand = {
   imageUrl: string;
 };
 
+// Define Offer type for form handling
+// This is different from the database Offer type which is Record<string, number>
+type Offer = {
+  quantity: string;
+  discount: string;
+};
+
 export default function NewProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -25,12 +32,10 @@ export default function NewProductPage() {
   const [name, setName] = useState("");
   const [weight, setWeight] = useState("");
   const [mrp, setMrp] = useState("");
-  const [discount, setDiscount] = useState("");
-  const [price, setPrice] = useState("");
+  const [offers, setOffers] = useState<Offer[]>([{ quantity: "1", discount: "0" }]);
   const [demand, setDemand] = useState("");
   const [description, setDescription] = useState("");
   const [piecesLeft, setPiecesLeft] = useState("");
-  const [lastEdited, setLastEdited] = useState<"mrp" | "discount" | "price" | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mounted, setMounted] = useState(false);
   const [success, setSuccess] = useState("");
@@ -39,6 +44,7 @@ export default function NewProductPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loadingBrands, setLoadingBrands] = useState(true);
 
+  // Set mounted state
   useEffect(() => { setMounted(true); }, []);
   
   // Fetch brands
@@ -62,29 +68,6 @@ export default function NewProductPage() {
     
     fetchBrands();
   }, []);
- 
-  // Smart price/discount calculation
-  useEffect(() => {
-    if (lastEdited === "mrp" || lastEdited === "discount") {
-      if (mrp && discount) {
-        const mrpVal = parseFloat(mrp);
-        const discountVal = parseFloat(discount);
-        if (!isNaN(mrpVal) && !isNaN(discountVal)) {
-          setPrice(((mrpVal * (1 - discountVal / 100)).toFixed(2)));
-        }
-      }
-    } else if (lastEdited === "price") {
-      if (mrp && price) {
-        const mrpVal = parseFloat(mrp);
-        const priceVal = parseFloat(price);
-        if (!isNaN(mrpVal) && !isNaN(priceVal) && mrpVal !== 0) {
-          setDiscount(((100 * (1 - priceVal / mrpVal)).toFixed(2)));
-        }
-      }
-    }
-  }, [mrp, discount, price, lastEdited]);
-  
-  if (!mounted) return null;
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -151,24 +134,56 @@ export default function NewProductPage() {
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
   };
+  
+  const handleAddOffer = () => {
+    setOffers([...offers, { quantity: "", discount: "" }]);
+  };
+  
+  const handleRemoveOffer = (index: number) => {
+    if (index === 0) {
+      // Don't allow removing the first offer (quantity 1)
+      return;
+    }
+    setOffers(offers.filter((_, i) => i !== index));
+  };
+  
+  const handleOfferChange = (index: number, field: keyof Offer, value: string) => {
+    const updatedOffers = [...offers];
+    updatedOffers[index][field] = value;
+    setOffers(updatedOffers);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
     setSuccess("");
+    
+    // Convert offers array to object format: {"quantity": discount}
+    const offersObj: Record<string, number> = {};
+    offers.forEach(offer => {
+      if (offer.quantity && offer.discount) {
+        offersObj[offer.quantity] = parseFloat(offer.discount);
+      }
+    });
+    
+    // Ensure there's always at least a "1": 0 default offer
+    if (!offersObj["1"]) {
+      offersObj["1"] = 0;
+    }
+    
     const productData = {
       brandId,
       name,
       weight,
       mrp: mrp ? parseFloat(mrp) : undefined,
-      discount: discount ? parseFloat(discount) : undefined,
-      price: price ? parseFloat(price) : undefined,
+      offers: offersObj,
       demand: demand ? parseFloat(demand) : undefined,
       description,
       piecesLeft: piecesLeft ? parseInt(piecesLeft, 10) : undefined,
       images,
     };
+    
     try {
       const response = await fetch("/api/admin/product/new", {
         method: "POST",
@@ -189,8 +204,7 @@ export default function NewProductPage() {
       setName("");
       setWeight("");
       setMrp("");
-      setDiscount("");
-      setPrice("");
+      setOffers([{ quantity: "1", discount: "0" }]);
       setDemand("");
       setDescription("");
       setPiecesLeft("");
@@ -203,6 +217,8 @@ export default function NewProductPage() {
     }
   };
 
+  if (!mounted) return null;
+  
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-4">
       <div className="max-w-7xl mx-auto">
@@ -395,62 +411,83 @@ export default function NewProductPage() {
                 />
               </div>
               
-              {/* Pricing */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    MRP (₹) *
+              {/* MRP */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  MRP (₹) *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
+                  placeholder="0.00"
+                  value={mrp}
+                  onChange={(e) => setMrp(e.target.value)}
+                  required
+                />
+              </div>
+              
+              {/* Offers Section */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Offers (Quantity-based Discounts) *
                   </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
-                    placeholder="0.00"
-                    value={mrp}
-                    onChange={(e) => {
-                      setMrp(e.target.value);
-                      setLastEdited("mrp");
-                    }}
-                    required
-                  />
+                  <button
+                    type="button"
+                    onClick={handleAddOffer}
+                    className="px-2 py-1 bg-blue-500 text-white rounded-md text-xs flex items-center gap-1"
+                  >
+                    <PlusIcon size={14} />
+                    Add Offer
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    Discount (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
-                    placeholder="0"
-                    value={discount}
-                    onChange={(e) => {
-                      setDiscount(e.target.value);
-                      setLastEdited("discount");
-                    }}
-                  />
+                <div className="space-y-2">
+                  {offers.map((offer, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
+                        <input
+                          type="number"
+                          min={index === 0 ? "1" : "2"} 
+                          step="1"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
+                          value={offer.quantity}
+                          onChange={(e) => handleOfferChange(index, "quantity", e.target.value)}
+                          required
+                          readOnly={index === 0} // First offer quantity is always 1 and can't be changed
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount (%)</div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
+                          value={offer.discount}
+                          onChange={(e) => handleOfferChange(index, "discount", e.target.value)}
+                          required
+                        />
+                      </div>
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOffer(index)}
+                          className="mt-5 p-1 text-red-500 hover:text-red-700"
+                          title="Remove Offer"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    Price (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
-                    placeholder="0.00"
-                    value={price}
-                    onChange={(e) => {
-                      setPrice(e.target.value);
-                      setLastEdited("price");
-                    }}
-                    required
-                  />
-                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                  Set discount percentage for different quantities. The first offer (quantity 1) is required and set to 0% by default.
+                </p>
               </div>
               
               {/* Inventory */}

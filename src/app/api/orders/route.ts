@@ -3,6 +3,28 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
+
+type Product = {
+  id: string;
+  name: string;
+  mrp: number;
+  offers: Prisma.JsonValue | null;
+  images: string[];
+  brand?: { id: string; name: string; slug: string; imageUrl: string } | null;
+  weight?: string | null;
+  piecesLeft?: number | null;
+};
+
+// Type guard to check if offers is a valid Record<string, number>
+function isValidOffers(offers: Prisma.JsonValue | null): offers is Record<string, number> {
+  return (
+    offers !== null &&
+    typeof offers === 'object' &&
+    !Array.isArray(offers) &&
+    Object.values(offers).every(value => typeof value === 'number')
+  );
+}
 
 // Function to generate a 6-digit OTP
 function generateOTP(): string {
@@ -130,9 +152,52 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    // Helper function to calculate price with offers based on quantity
+    const calculatePriceWithOffers = (product: Product, quantity: number): number => {
+      if (!product || !product.offers) return product.mrp;
+      
+      // Check if offers is valid and convert to Record<string, number>
+      let offers: Record<string, number>;
+      
+      if (isValidOffers(product.offers)) {
+        offers = product.offers;
+      } else if (typeof product.offers === 'string') {
+        try {
+          const parsed = JSON.parse(product.offers);
+          if (isValidOffers(parsed)) {
+            offers = parsed;
+          } else {
+            return product.mrp;
+          }
+        } catch {
+          return product.mrp;
+        }
+      } else {
+        return product.mrp;
+      }
+      
+      // Get all available quantity thresholds
+      const quantities = Object.keys(offers)
+        .map(Number)
+        .sort((a, b) => a - b);
+      
+      // Find the highest applicable discount for this quantity
+      let applicableOffer = "1"; // Default to offer for quantity 1
+      for (const q of quantities) {
+        if (quantity >= q) {
+          applicableOffer = q.toString();
+        } else {
+          break;
+        }
+      }
+      
+      const discountPercent = offers[applicableOffer] || 0;
+      return product.mrp * (1 - discountPercent / 100);
+    };
+
     // Calculate total
     const total = cartItemsWithProducts.reduce(
-      (sum, { cartItem, product }) => sum + product.price * cartItem.quantity,
+      (sum, { cartItem, product }) => sum + calculatePriceWithOffers(product, cartItem.quantity) * cartItem.quantity,
       0
     );
 
@@ -156,7 +221,7 @@ export async function POST(request: NextRequest) {
             create: cartItemsWithProducts.map(({ cartItem, product }) => ({
               productId: product.id,
               name: product.name,
-              price: product.price,
+              price: calculatePriceWithOffers(product, cartItem.quantity),
               quantity: cartItem.quantity,
               image: product.images[0] || null,
             })),
@@ -200,4 +265,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

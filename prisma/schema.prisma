@@ -85,8 +85,7 @@ model Product {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   mrp         Float
-  discount    Float       @default(0)
-  price       Float
+  offers      Json        @default("{\"1\": 0}")
   images      String[]
   brandId     String?     @db.ObjectId
   brand       Brand?      @relation(fields: [brandId], references: [id])
