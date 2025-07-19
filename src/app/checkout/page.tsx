@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useSessionUpdate } from "@/lib/hooks";
 import { formatProductName } from "@/lib/utils";
+import CustomLoader from "@/components/CustomLoader";
 
 const checkoutSchema = z.object({
   phone: z.string()
@@ -238,10 +239,8 @@ export default function CheckoutPage() {
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-        <div className="mx-auto max-w-3xl px-4 py-8">
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
         </div>
       </div>
     );

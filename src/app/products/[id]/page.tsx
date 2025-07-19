@@ -6,6 +6,7 @@ import Image from "next/image";
 import { notFound, useRouter } from "next/navigation";
 import { Toaster, toast } from 'react-hot-toast';
 import { formatProductName } from "@/lib/utils";
+import CustomLoader from "@/components/CustomLoader";
 
 // Define Brand type
 type Brand = {
@@ -117,9 +118,11 @@ export default function ProductDetailPage({
         return;
       }
       
-      toast.success('Item added to cart!');
       // Navigate to cart page
-      router.back();
+      toast.success('Item added to cart!');
+      setTimeout(() => {
+        router.back();
+      }, 1000);
       
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -197,10 +200,8 @@ export default function ProductDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
         </div>
       </div>
     );

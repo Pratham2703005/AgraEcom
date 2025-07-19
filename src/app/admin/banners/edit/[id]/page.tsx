@@ -6,6 +6,7 @@ import Link from "next/link";
 import ImageUpload from "@/components/ImageUpload";
 import BannerPreview from "@/components/BannerPreview";
 import { ArrowLeftIcon } from "lucide-react";
+import CustomLoader from "@/components/CustomLoader";
 
 
 
@@ -107,8 +108,10 @@ export default function EditBannerPage({ params }: {params: Promise<{id: string}
   
   if (isLoading) {
     return (
-      <div className="p-6 flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
+        </div>
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { redirect, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
+import CustomLoader from "@/components/CustomLoader";
 
 // TODO: Replace with your actual Cloudinary upload preset and cloud name
 const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET;
@@ -24,7 +25,13 @@ export default function NewBrandPage() {
   const [error, setError] = useState<string | null>(null);
   
   if (status === "loading") {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
+        </div>
+      </div>
+    );
   }
   
   if (status === "unauthenticated" || session?.user?.role !== "ADMIN") {

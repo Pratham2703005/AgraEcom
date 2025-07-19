@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatProductName } from "@/lib/utils";
 import { toast } from "react-hot-toast";
-
+import CustomLoader from "@/components/CustomLoader";
 type Brand = {
   id: string;
   name: string;
@@ -225,13 +225,11 @@ export default function CartPage() {
   };
 
   // Loading state while session is loading
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
         </div>
       </div>
     );

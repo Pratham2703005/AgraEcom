@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Trash2, Plus, ArrowLeftIcon } from "lucide-react";
+import CustomLoader from "@/components/CustomLoader";
 
 interface Brand {
   id: string;
@@ -28,7 +29,13 @@ export default function ViewAllBrandsPage() {
   }, [status, session]);
   
   if (status === "loading") {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
+        </div>
+      </div>
+    );
   }
   
   if (status === "unauthenticated" || session?.user?.role !== "ADMIN") {
