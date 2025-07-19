@@ -431,7 +431,7 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
               const isEditingOffers = editingOffers === product.id;
               const productOffers = isEditingOffers && offerAdjustment
                 ? offerAdjustment.offers
-                : product.offers;
+                : (product.offers as Record<string, number>);
 
               return (
                 <div
