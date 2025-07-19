@@ -27,7 +27,6 @@ export default async function StockManagementPage() {
       updatedAt: 'desc',
     },
   });
-
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-4">
       <div className="max-w-7xl mx-auto">
