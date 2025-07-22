@@ -16,8 +16,10 @@ import {
   Calendar,
   CheckCircle,
   XCircle,
-  ArrowUpDown
+  ArrowUpDown,
+  ArrowLeftIcon
 } from "lucide-react";
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -203,8 +205,12 @@ export default function ManageUsersPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
-            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
-            <div>
+            <Link
+              href="/admin" 
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <ArrowLeftIcon className="size-6 mr-4" />
+            </Link>            <div>
               <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Manage Users</h1>
               <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                 View and manage all users in your system

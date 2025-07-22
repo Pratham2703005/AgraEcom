@@ -9,8 +9,11 @@ import {
   Shield, 
   User,
   CheckCircle,
-  XCircle
+  XCircle,
+  ArrowLeftIcon
 } from "lucide-react";
+import CustomLoader from "@/components/CustomLoader";
+import Link from "next/link";
 
 interface AnalyticsData {
   totalUsers: number;
@@ -79,14 +82,11 @@ export default function UserAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-neutral-600 dark:text-neutral-400">Loading analytics...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="lg" />
         </div>
-      </div>
+      </div>    
     );
   }
 
@@ -108,8 +108,12 @@ export default function UserAnalyticsPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
-            <TrendingUp className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
-            <div>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <ArrowLeftIcon className="size-6 mr-4" />
+            </Link>            <div>
               <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">User Analytics</h1>
               <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                 Insights and statistics about your users

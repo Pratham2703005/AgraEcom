@@ -28,7 +28,7 @@ export default function ViewAllBrandsPage() {
     }
   }, [status, session]);
   
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
         <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
@@ -105,9 +105,7 @@ export default function ViewAllBrandsPage() {
           </Link>
         </div>
         
-        {loading ? (
-          <div className="flex justify-center items-center py-12">Loading brands...</div>
-        ) : error ? (
+        {error ? (
           <div className="bg-red-100 text-red-700 p-4 rounded-lg">{error}</div>
         ) : brands.length === 0 ? (
           <div className="bg-yellow-100 text-yellow-800 p-4 rounded-lg">
