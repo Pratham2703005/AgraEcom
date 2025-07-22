@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, Clipboard, ShoppingBag, Truck, CheckCircle, XCircle } from "lucide-react";
+import { Package, Clipboard, ShoppingBag, Truck, CheckCircle, XCircle, Users } from "lucide-react";
 
 export default function AdminPage() {
   const { data: session } = useSession();
@@ -15,27 +15,42 @@ export default function AdminPage() {
     delivered: 0,
     cancelled: 0
   });
+  const [userCounts, setUserCounts] = useState({
+    totalUsers: 0,
+    adminUsers: 0,
+    customerUsers: 0,
+    verifiedUsers: 0,
+    newUsersThisMonth: 0
+  });
   const [loading, setLoading] = useState(true);
 
-  // Fetch order counts for dashboard
+  // Fetch order and user counts for dashboard
   useEffect(() => {
-    const fetchOrderCounts = async () => {
+    const fetchDashboardData = async () => {
       if (session?.user?.role !== "ADMIN") return;
       
       try {
-        const response = await fetch('/api/admin/orders/count');
-        if (response.ok) {
-          const data = await response.json();
-          setOrderCounts(data);
+        // Fetch order counts
+        const orderResponse = await fetch('/api/admin/orders/count');
+        if (orderResponse.ok) {
+          const orderData = await orderResponse.json();
+          setOrderCounts(orderData);
+        }
+
+        // Fetch user counts
+        const userResponse = await fetch('/api/admin/users/count');
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setUserCounts(userData);
         }
       } catch (error) {
-        console.error("Error fetching order counts:", error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchOrderCounts();
+    fetchDashboardData();
   }, [session]);
 
   useEffect(() => {
@@ -72,6 +87,14 @@ export default function AdminPage() {
       items: [
         { name: "Add New Brand", link: "/admin/brands/new" },
         { name: "View All Brands", link: "/admin/brands/view-all" },
+      ]
+    },
+    {
+      title: "Users",
+      icon: <Users className="h-6 w-6" />,
+      items: [
+        { name: "Manage Users", link: "/admin/users" },
+        { name: "User Analytics", link: "/admin/users/analytics" },
       ]
     }
   ];
@@ -134,6 +157,60 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Cancelled Orders</p>
                   <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">{loading ? "..." : orderCounts.cancelled}</h3>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* User Statistics Cards */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Users</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/admin/users" className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 transition-all hover:shadow-md border-l-4 border-blue-500">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400 mr-4">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Users</p>
+                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">{loading ? "..." : userCounts.totalUsers}</h3>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/admin/users?role=customer" className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 transition-all hover:shadow-md border-l-4 border-green-500">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400 mr-4">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Customers</p>
+                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">{loading ? "..." : userCounts.customerUsers}</h3>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/admin/users?role=admin" className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 transition-all hover:shadow-md border-l-4 border-purple-500">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400 mr-4">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Admins</p>
+                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">{loading ? "..." : userCounts.adminUsers}</h3>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/admin/users/analytics" className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 transition-all hover:shadow-md border-l-4 border-orange-500">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400 mr-4">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">New This Month</p>
+                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">{loading ? "..." : userCounts.newUsersThisMonth}</h3>
                 </div>
               </div>
             </Link>

@@ -1,18 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WifiOff } from "lucide-react";
+import { WifiOff, Wifi } from "lucide-react";
 
 export function OfflineDetector() {
   const [isOffline, setIsOffline] = useState(false);
+  const [showReconnected, setShowReconnected] = useState(false);
   
   useEffect(() => {
     // Check initial online status
     setIsOffline(!navigator.onLine);
     
     // Add event listeners for online/offline status changes
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => {
+      setIsOffline(false);
+      setShowReconnected(true);
+      // Hide reconnected message after 3 seconds
+      setTimeout(() => setShowReconnected(false), 3000);
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      setShowReconnected(false);
+    };
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -23,6 +32,20 @@ export function OfflineDetector() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+  
+  // Show reconnected notification
+  if (showReconnected && !isOffline) {
+    return (
+      <div className="fixed top-20 right-4 z-50 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 shadow-lg animate-fadeIn">
+        <div className="flex items-center space-x-2">
+          <Wifi size={20} className="text-green-600 dark:text-green-400" />
+          <span className="text-sm font-medium text-green-800 dark:text-green-200">
+            Back online!
+          </span>
+        </div>
+      </div>
+    );
+  }
   
   if (!isOffline) return null;
   

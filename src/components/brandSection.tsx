@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, FreeMode } from 'swiper/modules';
+import { useOffline, safeFetch } from "@/lib/useOffline";
 
 // Import Swiper styles
 import 'swiper/css';
@@ -56,14 +57,20 @@ BrandCard.displayName = 'BrandCard';
 export const BrandsSection = memo(function BrandsSection() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const isOffline = useOffline();
   
   // Fetch brands from the API
   useEffect(() => {
     const fetchBrands = async () => {
+      if (isOffline) {
+        setLoading(false);
+        return;
+      }
+
       try {
         console.log('Fetching brands...');
-        const response = await fetch('/api/brands');
-        if (!response.ok) {
+        const response = await safeFetch('/api/brands');
+        if (!response || !response.ok) {
           throw new Error('Failed to fetch brands');
         }
         const data = await response.json();
@@ -77,7 +84,7 @@ export const BrandsSection = memo(function BrandsSection() {
     };
     
     fetchBrands();
-  }, []);
+  }, [isOffline]);
   
   // If loading, show skeleton loading state
   if (loading) {

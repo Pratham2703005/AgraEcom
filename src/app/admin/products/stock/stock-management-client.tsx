@@ -62,7 +62,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
   const [editingOffers, setEditingOffers] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({});
+  const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading] = useState(false);
   const [page, setPage] = useState(1);
@@ -337,9 +337,9 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
   };
 
   const updateProductOffers = async (productId: string, offers: Record<string, number>) => {
-  setIsSubmitting(true);
-  setUpdatingOffers(prev => ({ ...prev, [productId]: true }));
-  setMessage({ type: "", text: "" });
+    setIsSubmitting(true);
+    setUpdatingOffers(prev => ({ ...prev, [productId]: true }));
+    setMessage({ type: "", text: "" });
 
     try {
       const response = await fetch(`/api/admin/product/${productId}`, {
@@ -411,8 +411,8 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
 
         {message.text && (
           <div className={`px-4 py-2 rounded-lg text-sm ${message.type === "success"
-              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
             }`}>
             {message.text}
           </div>
@@ -485,15 +485,15 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
                     <div className="sm:p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6">
                         {/* Stock Management Section */}
-<div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm relative">
-  {updatingOffers[product.id] && (
-    <div className="absolute inset-0 bg-white/80 dark:bg-neutral-800/80 rounded-lg flex items-center justify-center z-10">
-      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-        <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-sm font-medium">Updating offers...</span>
-      </div>
-    </div>
-  )}                          <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Stock Management</h4>
+                        <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm relative">
+                          {updatingOffers[product.id] && (
+                            <div className="absolute inset-0 bg-white/80 dark:bg-neutral-800/80 rounded-lg flex items-center justify-center z-10">
+                              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-sm font-medium">Updating offers...</span>
+                              </div>
+                            </div>
+                          )}                          <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Stock Management</h4>
 
                           <div className="flex items-center gap-4 mb-4">
                             <div className="flex-1">
@@ -515,10 +515,10 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
                                 value={stockAdjustment?.newStock ?? product.piecesLeft ?? 0}
                                 onChange={(e) => handleStockChange(product.id, e.target.value)}
                                 className={`w-full px-3 py-2 border rounded-md dark:bg-neutral-700 dark:text-white ${stockAdjustment?.status === "done"
-                                    ? "border-green-500 dark:border-green-600"
-                                    : stockAdjustment?.status === "cancelled"
-                                      ? "border-red-500 dark:border-red-600"
-                                      : "border-neutral-300 dark:border-neutral-600"
+                                  ? "border-green-500 dark:border-green-600"
+                                  : stockAdjustment?.status === "cancelled"
+                                    ? "border-red-500 dark:border-red-600"
+                                    : "border-neutral-300 dark:border-neutral-600"
                                   }`}
                                 disabled={stockAdjustment?.status === "done" || stockAdjustment?.status === "cancelled" || isSubmitting}
                                 onFocus={(e) => e.target.select()}
@@ -569,14 +569,14 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
                             <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Quantity Offers</h4>
 
                             {!isEditingOffers ? (
-  <button
-    onClick={() => toggleEditOffers(product.id)}
-    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-    disabled={updatingOffers[product.id]}
-  >
-    <Edit size={16} />
-    {updatingOffers[product.id] ? 'Updating...' : 'Edit Offers'}
-  </button>
+                              <button
+                                onClick={() => toggleEditOffers(product.id)}
+                                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
+                                disabled={updatingOffers[product.id]}
+                              >
+                                <Edit size={16} />
+                                {updatingOffers[product.id] ? 'Updating...' : 'Edit Offers'}
+                              </button>
                             ) : (
                               <button
                                 onClick={() => handleAddOffer(product.id)}
@@ -591,94 +591,94 @@ const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({}
 
                           <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                             {Object.entries(productOffers || {})
-  .sort(([a], [b]) => parseInt(a) - parseInt(b))
-  .map(([quantity, discount], index) => (
-    <div key={`${product.id}-offer-${index}`} className="grid grid-cols-[auto_auto_1fr_auto] sm:flex sm:items-center gap-2 sm:gap-3">
-                                <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
-  {isEditingOffers && quantity !== "1" ? (
-    <input
-      type="number"
-      min="1"
-      value={quantity}
-      onChange={(e) => handleQuantityChange(product.id, quantity, e.target.value)}
-      className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-      disabled={isSubmitting}
-      onFocus={(e) => e.target.select()}
-      inputMode="numeric"
-      onKeyDown={(e) => e.stopPropagation()}
-    />
-  ) : (
-    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-      {quantity}
-    </div>
-  )}
-</div>
+                              .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                              .map(([quantity, discount], index) => (
+                                <div key={`${product.id}-offer-${index}`} className="grid grid-cols-[auto_auto_1fr_auto] sm:flex sm:items-center gap-2 sm:gap-3">
+                                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
+                                    {isEditingOffers && quantity !== "1" ? (
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        value={quantity}
+                                        onChange={(e) => handleQuantityChange(product.id, quantity, e.target.value)}
+                                        className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
+                                        disabled={isSubmitting}
+                                        onFocus={(e) => e.target.select()}
+                                        inputMode="numeric"
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                      />
+                                    ) : (
+                                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
+                                        {quantity}
+                                      </div>
+                                    )}
+                                  </div>
 
                                   <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount</div>
-  {isEditingOffers ? (
-    <input
-      type="number"
-      min="0"
-      max="100"
-      step="0.1"
-      value={discount}
-      onChange={(e) => handleOfferChange(product.id, quantity, e.target.value)}
-      className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-      disabled={isSubmitting}
-      onFocus={(e) => e.target.select()}
-      inputMode="decimal"
-      onKeyDown={(e) => e.stopPropagation()}
-    />
-  ) : (
-    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-      {discount}%
-    </div>
-  )}
-</div>
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount</div>
+                                    {isEditingOffers ? (
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.1"
+                                        value={discount}
+                                        onChange={(e) => handleOfferChange(product.id, quantity, e.target.value)}
+                                        className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
+                                        disabled={isSubmitting}
+                                        onFocus={(e) => e.target.select()}
+                                        inputMode="decimal"
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                      />
+                                    ) : (
+                                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
+                                        {discount}%
+                                      </div>
+                                    )}
+                                  </div>
 
                                   <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md flex-1">
-  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Price</div>
-  <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center">
-    ₹{calculatePrice(product.mrp, Number(discount)).toFixed(2)}
-  </div>
-</div>
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Price</div>
+                                    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center">
+                                      ₹{calculatePrice(product.mrp, Number(discount)).toFixed(2)}
+                                    </div>
+                                  </div>
 
                                   {isEditingOffers && quantity !== "1" && (
-  <button
-    onClick={() => handleRemoveOffer(product.id, quantity)}
-    className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-    title="Remove Offer"
-    disabled={isSubmitting}
-  >
-    <Trash2 size={16} />
-  </button>
-)}
+                                    <button
+                                      onClick={() => handleRemoveOffer(product.id, quantity)}
+                                      className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                                      title="Remove Offer"
+                                      disabled={isSubmitting}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  )}
                                 </div>
                               ))}
                           </div>
 
                           {isEditingOffers && (
-  <div className="mt-4 flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 sm:gap-0">
-    <button
-      onClick={() => handleOfferStatusChange(product.id, "done")}
-      disabled={isSubmitting || updatingOffers[product.id]}
-      className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm flex items-center gap-1 disabled:opacity-50"
-    >
-      <CheckCircle size={16} />
-      {updatingOffers[product.id] ? 'Saving...' : 'Save Offers'}
-    </button>
-    <button
-      onClick={() => handleOfferStatusChange(product.id, "cancelled")}
-      disabled={isSubmitting || updatingOffers[product.id]}
-      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1 disabled:opacity-50"
-    >
-      <XCircle size={16} />
-      Cancel
-    </button>
-  </div>
-)}
+                            <div className="mt-4 flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 sm:gap-0">
+                              <button
+                                onClick={() => handleOfferStatusChange(product.id, "done")}
+                                disabled={isSubmitting || updatingOffers[product.id]}
+                                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm flex items-center gap-1 disabled:opacity-50"
+                              >
+                                <CheckCircle size={16} />
+                                {updatingOffers[product.id] ? 'Saving...' : 'Save Offers'}
+                              </button>
+                              <button
+                                onClick={() => handleOfferStatusChange(product.id, "cancelled")}
+                                disabled={isSubmitting || updatingOffers[product.id]}
+                                className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1 disabled:opacity-50"
+                              >
+                                <XCircle size={16} />
+                                Cancel
+                              </button>
+                            </div>
+                          )}
 
                           {offerAdjustment?.status === "done" && (
                             <div className="mt-2 text-green-600 dark:text-green-500 text-sm flex items-center gap-1">

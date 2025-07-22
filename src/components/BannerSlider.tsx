@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { useOffline, safeFetch } from "@/lib/useOffline";
 import './BannerSlider.css'
 
 // Import Swiper styles
@@ -39,6 +40,7 @@ export default function BannerSlider() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const isOffline = useOffline();
 
   // Detect mobile devices
   useEffect(() => {
@@ -56,9 +58,14 @@ export default function BannerSlider() {
 
   useEffect(() => {
     const fetchBanners = async () => {
+      if (isOffline) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch("/api/banners");
-        if (!response.ok) {
+        const response = await safeFetch("/api/banners");
+        if (!response || !response.ok) {
           throw new Error("Failed to fetch banners");
         }
         const data = await response.json();
@@ -72,7 +79,7 @@ export default function BannerSlider() {
     };
 
     fetchBanners();
-  }, []);
+  }, [isOffline]);
 
   if (loading) {
     return <BannerSkeleton />;

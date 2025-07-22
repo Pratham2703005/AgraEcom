@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Please Login First" }, { status: 401 });
     }
 
     // Find user's cart or create a new one if it doesn't exist
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Please Login First" }, { status: 401 });
     }
 
     const { productId, quantity } = await request.json();
