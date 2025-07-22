@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { Edit, Trash2, Search } from "lucide-react";
+import {  Trash2, Search } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Prisma } from "@prisma/client";
-
+import {useRouter} from 'next/navigation'
 type Brand = {
   id: string;
   name: string;
@@ -69,6 +68,7 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const productsPerPage = 20;
+  const router = useRouter()
   
   // Use ref to track if we're already loading to prevent race conditions
   const isLoadingRef = useRef(false);
@@ -330,63 +330,56 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
               displayedProducts.map((product, index) => {
                 const isLast = displayedProducts.length === index + 1;
                 return (
-                  <tr 
-                    key={product.id} 
-                    ref={isLast ? lastProductElementRef : null}
-                    className="hover:bg-neutral-50 dark:hover:bg-neutral-700"
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {product.images && product.images.length > 0 ? (
-                        <div className="relative h-12 w-12">
-                          <Image
-                            src={product.images[0]}
-                            alt={formatProductName(product)}
-                            fill
-                            sizes="48px"
-                            className="object-cover rounded-md"
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
-                          <span className="text-neutral-400 dark:text-neutral-500 text-xs">No image</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100">
-                      {formatProductName(product)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      ₹{product.mrp.toFixed(2)}
-                    </td>
-                      <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        {product.offers && (product.offers as Record<string, number>)["1"] !== undefined ? `${(product.offers as Record<string, number>)["1"]}%` : "0%"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      ₹{(product.mrp * (1 - ((product.offers as Record<string, number>)["1"] || 0) / 100)).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
-                      {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/admin/products/edit/${product.id}`}
-                          className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
-                          title="Edit"
-                        >
-                          <Edit size={18} />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          disabled={isDeleting[product.id]}
-                          className="p-1 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <tr
+  key={product.id}
+  ref={isLast ? lastProductElementRef : null}
+  onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+  className="hover:bg-neutral-50 dark:hover:bg-neutral-700 cursor-pointer"
+>
+  <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+    {product.images && product.images.length > 0 ? (
+      <div className="relative h-12 w-12">
+        <Image
+          src={product.images[0]}
+          alt={formatProductName(product)}
+          fill
+          sizes="48px"
+          className="object-cover rounded-md"
+        />
+      </div>
+    ) : (
+      <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
+        <span className="text-neutral-400 dark:text-neutral-500 text-xs">No image</span>
+      </div>
+    )}
+  </td>
+  <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100">
+    {formatProductName(product)}
+  </td>
+  <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+    ₹{product.mrp.toFixed(2)}
+  </td>
+  <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+    {product.offers && (product.offers as Record<string, number>)["1"] !== undefined ? `${(product.offers as Record<string, number>)["1"]}%` : "0%"}
+  </td>
+  <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+    ₹{(product.mrp * (1 - ((product.offers as Record<string, number>)["1"] || 0) / 100)).toFixed(2)}
+  </td>
+  <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+    {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
+  </td>
+  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+    <button
+      onClick={() => handleDelete(product.id)}
+      disabled={isDeleting[product.id]}
+      className="p-1 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
+      title="Delete"
+    >
+      <Trash2 size={18} />
+    </button>
+  </td>
+</tr>
+
                 );
               })
             ) : (

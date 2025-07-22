@@ -6,6 +6,7 @@ import { Search, CheckCircle, XCircle, ChevronDown, ChevronUp, PlusCircle, Trash
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Prisma } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 type Brand = {
   id: string;
@@ -68,6 +69,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const productsPerPage = 20;
+  const router = useRouter();
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastProductElementRef = useCallback((node: HTMLElement | null) => {
@@ -445,7 +447,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                     onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
                   >
                     <div className="flex items-center flex-1 gap-4">
-                      <div className="relative h-16 w-16">
+                      <div className="relative h-16 w-16" onClick={()=> router.push(`/admin/products/edit/${product.id}`)}>
                         {product.images && product.images.length > 0 ? (
                           <Image
                             src={product.images[0]}
