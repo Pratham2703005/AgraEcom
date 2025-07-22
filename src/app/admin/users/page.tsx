@@ -6,8 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Users, 
   Search, 
-  Filter, 
-  MoreVertical, 
+  Filter,
   Edit, 
   Trash2, 
   Shield, 

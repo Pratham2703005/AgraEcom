@@ -6,11 +6,8 @@ import { useRouter } from "next/navigation";
 import { 
   Users, 
   TrendingUp, 
-  Calendar, 
   Shield, 
   User,
-  Mail,
-  Phone,
   CheckCircle,
   XCircle
 } from "lucide-react";
