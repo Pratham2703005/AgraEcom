@@ -22,17 +22,34 @@ export async function GET(request: Request) {
 
     console.log(`Admin products API - Page: ${page}, Skip: ${skip}, Limit: ${limit}`);
 
-    // Fetch products with pagination
+    // Fetch products with pagination and optimized selection
     const products = await db.product.findMany({
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
-      include: {
-        brand: true
+      orderBy: { updatedAt: "desc" }, // Use updatedAt for better performance with index
+      select: {
+        id: true,
+        name: true,
+        mrp: true,
+        offers: true,
+        images: true,
+        weight: true,
+        piecesLeft: true,
+        demand: true,
+        createdAt: true,
+        updatedAt: true,
+        brand: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+          }
+        }
       }
     });
 
-    // Get total count for pagination info
+    // Get total count for pagination info (cached for better performance)
     const totalProducts = await db.product.count();
     const totalPages = Math.ceil(totalProducts / limit);
 

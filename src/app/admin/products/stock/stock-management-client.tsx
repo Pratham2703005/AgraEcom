@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import { Search, CheckCircle, XCircle, ChevronDown, ChevronUp, PlusCircle, Trash2, Edit } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import ProductImage from "@/components/ui/product-image";
 import { Prisma } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
@@ -57,6 +57,7 @@ export default function StockManagementClient({ initialProducts }: { initialProd
   const [products, setProducts] = useState<Product[]>(initialProducts || []);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts || []);
   const [stockAdjustments, setStockAdjustments] = useState<Record<string, StockAdjustment>>({});
   const [offerAdjustments, setOfferAdjustments] = useState<Record<string, OfferAdjustment>>({});
@@ -65,30 +66,151 @@ export default function StockManagementClient({ initialProducts }: { initialProd
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
   const productsPerPage = 20;
   const router = useRouter();
+  
+  // Use ref to track if we're already loading to prevent race conditions
+  const isLoadingRef = useRef(false);
+  const loadedPagesRef = useRef(new Set<number>([1])); // Mark first page as loaded
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Function to load products from API
+  const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean = false) => {
+    // Prevent duplicate loading
+    if (isLoadingRef.current || loadedPagesRef.current.has(pageToLoad)) {
+      return;
+    }
+    
+    isLoadingRef.current = true;
+    loadedPagesRef.current.add(pageToLoad);
+    
+    if (pageToLoad === 1 && !isInitial) {
+      setProducts([]);
+      setDisplayedProducts([]);
+      loadedPagesRef.current.clear();
+      loadedPagesRef.current.add(1);
+    }
+    
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`/api/admin/product?page=${pageToLoad}&limit=${productsPerPage}`);
+      
+      if (!response.ok) {
+        throw new Error("Failed to load products");
+      }
+      
+      const data = await response.json();
+      const newProducts = data.products || [];
+      const pagination = data.pagination || {};
+      
+      // Check if we have more products to load
+      setHasMore(pagination.hasMore);
+      
+      if (newProducts.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      
+      if (pageToLoad === 1) {
+        // First page replaces existing products
+        setProducts(newProducts);
+        setDisplayedProducts(newProducts);
+      } else {
+        // Subsequent pages append to existing products
+        setProducts(prev => {
+          // Filter out duplicates by ID
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
+          
+          if (uniqueNewProducts.length === 0) {
+            setHasMore(false);
+          }
+          
+          return [...prev, ...uniqueNewProducts];
+        });
+        setDisplayedProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
+          return [...prev, ...uniqueNewProducts];
+        });
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
+      setMessage({ type: "error", text: (error as Error).message });
+      // Remove from loaded pages on error so it can be retried
+      loadedPagesRef.current.delete(pageToLoad);
+    } finally {
+      setLoading(false);
+      isLoadingRef.current = false;
+      if (isInitial) {
+        setIsInitialLoading(false);
+      }
+    }
+  }, [productsPerPage]);
+
+  // Initialize with products from server
+  useEffect(() => {
+    if (initialProducts.length > 0) {
+      setProducts(initialProducts);
+      setDisplayedProducts(initialProducts);
+      setFilteredProducts(initialProducts);
+      setHasMore(initialProducts.length === productsPerPage);
+    }
+    
+    // Cleanup function
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [initialProducts, productsPerPage]);
+
+  // Set up intersection observer for infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastProductElementRef = useCallback((node: HTMLElement | null) => {
-    if (loading) return;
+    if (loading || !hasMore) return;
     if (observer.current) observer.current.disconnect();
+    
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
+      if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
         setPage(prevPage => prevPage + 1);
       }
-    }, { threshold: 0.8 });
-    if (node) observer.current.observe(node);
+    }, { 
+      threshold: 0.1,
+      rootMargin: '200px'
+    });
+    
+    if (node) {
+      observer.current.observe(node);
+    }
   }, [loading, hasMore]);
 
-  // Filter products based on search query
+  // Load products when page changes (but not on initial mount)
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (page > 1) {
+      loadProducts(page, false);
+    }
+  }, [page, loadProducts]);
+
+  // Filter products based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
       setFilteredProducts(products);
     } else {
-      const lowerCaseQuery = searchQuery.toLowerCase();
+      const lowerCaseQuery = debouncedSearchQuery.toLowerCase();
       const filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(lowerCaseQuery) ||
@@ -98,15 +220,12 @@ export default function StockManagementClient({ initialProducts }: { initialProd
     }
     // Reset pagination when search query changes
     setPage(1);
-  }, [searchQuery, products]);
+  }, [debouncedSearchQuery, products]);
 
-  // Load more products when page changes
+  // Update displayed products based on filtered results
   useEffect(() => {
-    const start = 0;
-    const end = page * productsPerPage;
-    setDisplayedProducts(filteredProducts.slice(start, end));
-    setHasMore(end < filteredProducts.length);
-  }, [filteredProducts, page]);
+    setDisplayedProducts(filteredProducts);
+  }, [filteredProducts]);
 
   // Stock change handling
   const handleStockChange = (productId: string, value: string) => {
@@ -447,18 +566,19 @@ export default function StockManagementClient({ initialProducts }: { initialProd
                     onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
                   >
                     <div className="flex items-center flex-1 gap-4">
-                      <div className="relative h-16 w-16" onClick={()=> router.push(`/admin/products/edit/${product.id}`)}>
+                      <div className="relative h-16 w-16 cursor-pointer" onClick={()=> router.push(`/admin/products/edit/${product.id}`)}>
                         {product.images && product.images.length > 0 ? (
-                          <Image
+                          <ProductImage
                             src={product.images[0]}
                             alt={formatProductName(product)}
                             fill
-                            sizes="64px"
+                            sizes="(max-width: 768px) 48px, 64px"
                             className="object-cover rounded-md"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="h-16 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
-                            <span className="text-neutral-400 dark:text-neutral-500">No image</span>
+                            <span className="text-neutral-400 dark:text-neutral-500 text-xs">No image</span>
                           </div>
                         )}
                       </div>
@@ -709,12 +829,20 @@ export default function StockManagementClient({ initialProducts }: { initialProd
           </div>
         )}
 
-        {/* Loading indicator */}
-        {loading && (
-          <div className="mt-4 space-y-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <ProductSkeleton key={`loading-more-${index}`} />
-            ))}
+        {/* Loading indicator for infinite scroll */}
+        {loading && !isInitialLoading && (
+          <div className="mt-4 flex justify-center">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+              <span className="text-sm text-neutral-500">Loading more products...</span>
+            </div>
+          </div>
+        )}
+        
+        {/* End of results indicator */}
+        {!hasMore && displayedProducts.length > 0 && !loading && (
+          <div className="mt-4 text-center text-sm text-neutral-500">
+            No more products to load
           </div>
         )}
       </div>

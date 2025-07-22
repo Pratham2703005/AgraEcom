@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import {  Trash2, Search } from "lucide-react";
 import { formatProductName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import ProductImage from "@/components/ui/product-image";
 import { Prisma } from "@prisma/client";
 import {useRouter} from 'next/navigation'
 type Brand = {
@@ -61,6 +61,7 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
@@ -76,16 +77,15 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   
   // Function to load products from API
   const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean = false) => {
-    // Prevent duplicate loading
+    // Prevent duplicate loading with better race condition handling
     if (isLoadingRef.current || loadedPagesRef.current.has(pageToLoad)) {
-      console.log(`Already loading or loaded page ${pageToLoad}, skipping`);
       return;
     }
     
     isLoadingRef.current = true;
     loadedPagesRef.current.add(pageToLoad);
     
-    if (pageToLoad === 1) {
+    if (pageToLoad === 1 && !isInitial) {
       setProducts([]);
       setDisplayedProducts([]);
       loadedPagesRef.current.clear();
@@ -93,10 +93,8 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
     }
     
     setLoading(true);
-    console.log(`Starting to load page ${pageToLoad}`);
     
     try {
-      console.log(`Fetching page ${pageToLoad} of products`);
       const response = await fetch(`/api/admin/product?page=${pageToLoad}&limit=${productsPerPage}`);
       
       if (!response.ok) {
@@ -107,13 +105,10 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
       const newProducts = data.products || [];
       const pagination = data.pagination || {};
       
-      console.log(`Loaded page ${pageToLoad} with ${newProducts.length} products. Total: ${pagination.totalProducts}, Has more: ${pagination.hasMore}`);
-      
       // Check if we have more products to load
       setHasMore(pagination.hasMore);
       
       if (newProducts.length === 0) {
-        console.log("No products returned, setting hasMore to false");
         setHasMore(false);
         return;
       }
@@ -128,10 +123,8 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
           // Filter out duplicates by ID
           const existingIds = new Set(prev.map(p => p.id));
           const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
-          console.log(`Adding ${uniqueNewProducts.length} new unique products to the list`);
           
           if (uniqueNewProducts.length === 0) {
-            console.log("No new unique products to add, setting hasMore to false");
             setHasMore(false);
           }
           
@@ -157,9 +150,17 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
     }
   }, [productsPerPage]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Initialize with first page of products on mount
   useEffect(() => {
-    console.log("Component mounted, loading first page of products");
     loadProducts(1, true);
     
     // Cleanup function
@@ -200,12 +201,12 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
     }
   }, [page]); // Remove loadProducts from dependency array
 
-  // Filter products based on search query
+  // Filter products based on debounced search query
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearchQuery.trim()) {
       setDisplayedProducts(products);
     } else {
-      const lowerCaseQuery = searchQuery.toLowerCase();
+      const lowerCaseQuery = debouncedSearchQuery.toLowerCase();
       const filtered = products.filter(
         (product) => 
           product.name.toLowerCase().includes(lowerCaseQuery) || 
@@ -213,7 +214,7 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
       );
       setDisplayedProducts(filtered);
     }
-  }, [searchQuery, products]);
+  }, [debouncedSearchQuery, products]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) {
@@ -339,12 +340,13 @@ export default function ViewAllTable({ products: initialProducts }: { products: 
   <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
     {product.images && product.images.length > 0 ? (
       <div className="relative h-12 w-12">
-        <Image
+        <ProductImage
           src={product.images[0]}
           alt={formatProductName(product)}
           fill
-          sizes="48px"
+          sizes="(max-width: 768px) 48px, 48px"
           className="object-cover rounded-md"
+          loading="lazy"
         />
       </div>
     ) : (

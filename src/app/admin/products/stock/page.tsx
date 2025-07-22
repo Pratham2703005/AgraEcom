@@ -2,10 +2,12 @@ import { db } from "@/lib/db";
 import StockManagementClient from "./stock-management-client";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
+import ErrorBoundary from "@/components/ui/error-boundary";
 
 export default async function StockManagementPage() {
-  // Fetch all products with minimal data needed for stock management
+  // Fetch initial batch of products with minimal data needed for stock management
   const products = await db.product.findMany({
+    take: 20, // Limit initial load for better performance
     select: {
       id: true,
       name: true,
@@ -42,7 +44,9 @@ export default async function StockManagementPage() {
         </div>
         
         {/* Client Component */}
-        <StockManagementClient initialProducts={products} />
+        <ErrorBoundary>
+          <StockManagementClient initialProducts={products} />
+        </ErrorBoundary>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import ViewAllProductsTable from "./view-all-table";
 import { ArrowLeftIcon } from "lucide-react";
 import { Product } from "@prisma/client";
+import ErrorBoundary from "@/components/ui/error-boundary";
 
 export default async function ViewAllProductsPage() {
   // We'll let the client component handle all data fetching
@@ -18,7 +19,9 @@ export default async function ViewAllProductsPage() {
       </div>
       
       <div className="bg-white shadow-sm overflow-hidden">
-        <ViewAllProductsTable products={initialProducts} />
+        <ErrorBoundary>
+          <ViewAllProductsTable products={initialProducts} />
+        </ErrorBoundary>
       </div>
     </div>
   );
