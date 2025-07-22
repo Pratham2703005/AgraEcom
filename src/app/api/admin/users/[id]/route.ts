@@ -4,11 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // Update user role
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const id = (await params).id
     const session = await getServerSession(authOptions);
     
     if (!session || session.user?.role !== "ADMIN") {
@@ -16,7 +14,7 @@ export async function PUT(
     }
 
     const { role } = await request.json();
-    const userId = params.id;
+    const userId = id;
 
     // Validate role
     if (!role || !["ADMIN", "CUSTOMER"].includes(role)) {
@@ -67,10 +65,8 @@ export async function PUT(
 }
 
 // Delete user
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const id = (await params).id
   try {
     const session = await getServerSession(authOptions);
     
@@ -78,7 +74,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = params.id;
+    const userId = id;
 
     // Prevent admin from deleting their own account
     if (userId === session.user.id) {
