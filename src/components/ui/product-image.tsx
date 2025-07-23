@@ -43,7 +43,7 @@ export default function ProductImage({
   }
 
   return (
-    <div className={`relative ${fill ? '' : 'inline-block'}`}>
+    <div className={`relative h-full w-full ${fill ? '' : 'inline-block'}`}>
       {isLoading && (
         <div className={`bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse ${fill ? 'absolute inset-0' : ''} ${className}`}>
           <div className="flex items-center justify-center h-full">
