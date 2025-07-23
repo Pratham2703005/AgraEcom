@@ -14,16 +14,38 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get pagination parameters
+    // Get pagination and search parameters
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const search = searchParams.get("search") || "";
     const skip = (page - 1) * limit;
 
-    console.log(`Admin products API - Page: ${page}, Skip: ${skip}, Limit: ${limit}`);
+    console.log(`Admin products API - Page: ${page}, Skip: ${skip}, Limit: ${limit}, Search: "${search}"`);
 
-    // Fetch products with pagination and optimized selection
+    // Build where clause for search
+    const whereClause = search.trim() ? {
+      OR: [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive" as const
+          }
+        },
+        {
+          brand: {
+            name: {
+              contains: search,
+              mode: "insensitive" as const
+            }
+          }
+        }
+      ]
+    } : {};
+
+    // Fetch products with pagination, search, and optimized selection
     const products = await db.product.findMany({
+      where: whereClause,
       skip,
       take: limit,
       orderBy: { updatedAt: "desc" }, // Use updatedAt for better performance with index
@@ -49,8 +71,10 @@ export async function GET(request: Request) {
       }
     });
 
-    // Get total count for pagination info (cached for better performance)
-    const totalProducts = await db.product.count();
+    // Get total count for pagination info (with search filter)
+    const totalProducts = await db.product.count({
+      where: whereClause
+    });
     const totalPages = Math.ceil(totalProducts / limit);
 
     console.log(`Found ${products.length} products. Total: ${totalProducts}, Total Pages: ${totalPages}`);

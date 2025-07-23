@@ -1,846 +1,159 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, CheckCircle, XCircle, ChevronDown, ChevronUp, PlusCircle, Trash2, Edit } from "lucide-react";
-import { formatProductName } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import ProductImage from "@/components/ui/product-image";
-import { Prisma } from "@prisma/client";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Product, Message } from "./types";
+import { useProductSearch } from "./hooks/useProductSearch";
+import { useStockAdjustments } from "./hooks/useStockAdjustments";
+import { useOfferAdjustments } from "./hooks/useOfferAdjustments";
+import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
+import { SearchBar } from "./components/SearchBar";
+import { ProductCard } from "./components/ProductCard";
+import { ProductSkeleton } from "./components/ProductSkeleton";
 
-type Brand = {
-  id: string;
-  name: string;
-  slug: string;
-  imageUrl: string;
-};
+interface StockManagementClientProps {
+  initialProducts: Product[];
+}
 
-// Define Product type
-type Product = {
-  id: string;
-  name: string;
-  brand?: Brand | null;
-  weight: string | null;
-  images: string[];
-  mrp: number;
-  offers: Prisma.JsonValue;
-  piecesLeft: number | null;
-};
-
-type StockAdjustment = {
-  productId: string;
-  newStock: number;
-  status: "pending" | "done" | "cancelled";
-};
-
-type OfferAdjustment = {
-  productId: string;
-  offers: Record<string, number>;
-  status: "pending" | "done" | "cancelled";
-};
-
-// Product skeleton component for loading state
-// const ProductSkeleton = () => (
-//   <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg mb-3 animate-pulse bg-white dark:bg-neutral-800">
-//     <div className="flex items-center gap-4">
-//       <div className="h-16 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-md"></div>
-//       <div className="flex-1">
-//         <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mb-2"></div>
-//         <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4"></div>
-//       </div>
-//       <div className="h-8 w-8 bg-neutral-200 dark:bg-neutral-700 rounded-full"></div>
-//     </div>
-//   </div>
-// );
-
-export default function StockManagementClient({ initialProducts }: { initialProducts: Product[] }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts || []);
-  const [stockAdjustments, setStockAdjustments] = useState<Record<string, StockAdjustment>>({});
-  const [offerAdjustments, setOfferAdjustments] = useState<Record<string, OfferAdjustment>>({});
+export default function StockManagementClient({ initialProducts }: StockManagementClientProps) {
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
-  const [editingOffers, setEditingOffers] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updatingOffers, setUpdatingOffers] = useState<Record<string, boolean>>({});
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isInitialLoading, setIsInitialLoading] = useState(false);
-  const productsPerPage = 20;
-  const router = useRouter();
-  
-  // Use ref to track if we're already loading to prevent race conditions
-  const isLoadingRef = useRef(false);
-  const loadedPagesRef = useRef(new Set<number>([1])); // Mark first page as loaded
+  const [message, setMessage] = useState<Message>({ type: "", text: "" });
 
-  // Debounce search query
+  // Use custom hooks
+  const {
+    products,
+    loading,
+    hasMore,
+    searchQuery,
+    setSearchQuery,
+    debouncedSearchQuery,
+    isInitialLoading,
+    initializeProducts,
+    loadNextPage,
+    setProducts
+  } = useProductSearch();
+
+  const {
+    stockAdjustments,
+    isSubmitting,
+    handleStockChange,
+    handleStockStatusChange
+  } = useStockAdjustments(products, setProducts, setMessage);
+
+  const {
+    offerAdjustments,
+    editingOffers,
+    updatingOffers,
+    toggleEditOffers,
+    handleQuantityChange,
+    handleOfferChange,
+    handleAddOffer,
+    handleRemoveOffer,
+    handleOfferStatusChange
+  } = useOfferAdjustments(products, setProducts, setMessage);
+
+  const { lastProductElementRef, cleanup } = useInfiniteScroll(
+    loading,
+    hasMore,
+    debouncedSearchQuery,
+    loadNextPage
+  );
+
+  // Initialize products on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
+    initializeProducts(initialProducts);
+  }, [initialProducts, initializeProducts]);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Function to load products from API
-  const loadProducts = useCallback(async (pageToLoad: number, isInitial: boolean = false) => {
-    // Prevent duplicate loading
-    if (isLoadingRef.current || loadedPagesRef.current.has(pageToLoad)) {
-      return;
-    }
-    
-    isLoadingRef.current = true;
-    loadedPagesRef.current.add(pageToLoad);
-    
-    if (pageToLoad === 1 && !isInitial) {
-      setProducts([]);
-      setDisplayedProducts([]);
-      loadedPagesRef.current.clear();
-      loadedPagesRef.current.add(1);
-    }
-    
-    setLoading(true);
-    
-    try {
-      const response = await fetch(`/api/admin/product?page=${pageToLoad}&limit=${productsPerPage}`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to load products");
-      }
-      
-      const data = await response.json();
-      const newProducts = data.products || [];
-      const pagination = data.pagination || {};
-      
-      // Check if we have more products to load
-      setHasMore(pagination.hasMore);
-      
-      if (newProducts.length === 0) {
-        setHasMore(false);
-        return;
-      }
-      
-      if (pageToLoad === 1) {
-        // First page replaces existing products
-        setProducts(newProducts);
-        setDisplayedProducts(newProducts);
-      } else {
-        // Subsequent pages append to existing products
-        setProducts(prev => {
-          // Filter out duplicates by ID
-          const existingIds = new Set(prev.map(p => p.id));
-          const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
-          
-          if (uniqueNewProducts.length === 0) {
-            setHasMore(false);
-          }
-          
-          return [...prev, ...uniqueNewProducts];
-        });
-        setDisplayedProducts(prev => {
-          const existingIds = new Set(prev.map(p => p.id));
-          const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id));
-          return [...prev, ...uniqueNewProducts];
-        });
-      }
-    } catch (error) {
-      console.error("Error loading products:", error);
-      setMessage({ type: "error", text: (error as Error).message });
-      // Remove from loaded pages on error so it can be retried
-      loadedPagesRef.current.delete(pageToLoad);
-    } finally {
-      setLoading(false);
-      isLoadingRef.current = false;
-      if (isInitial) {
-        setIsInitialLoading(false);
-      }
-    }
-  }, [productsPerPage]);
-
-  // Initialize with products from server
+  // Cleanup on unmount
   useEffect(() => {
-    if (initialProducts.length > 0) {
-      setProducts(initialProducts);
-      setDisplayedProducts(initialProducts);
-      setFilteredProducts(initialProducts);
-      setHasMore(initialProducts.length === productsPerPage);
-    }
-    
-    // Cleanup function
-    return () => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-    };
-  }, [initialProducts, productsPerPage]);
+    return cleanup;
+  }, [cleanup]);
 
-  // Set up intersection observer for infinite scrolling
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastProductElementRef = useCallback((node: HTMLElement | null) => {
-    if (loading || !hasMore) return;
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
-        setPage(prevPage => prevPage + 1);
-      }
-    }, { 
-      threshold: 0.1,
-      rootMargin: '200px'
-    });
-    
-    if (node) {
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore]);
-
-  // Load products when page changes (but not on initial mount)
+  // Clear message after 5 seconds
   useEffect(() => {
-    if (page > 1) {
-      loadProducts(page, false);
+    if (message.text) {
+      const timer = setTimeout(() => {
+        setMessage({ type: "", text: "" });
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [page, loadProducts]);
-
-  // Filter products based on debounced search query
-  useEffect(() => {
-    if (!debouncedSearchQuery.trim()) {
-      setFilteredProducts(products);
-    } else {
-      const lowerCaseQuery = debouncedSearchQuery.toLowerCase();
-      const filtered = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(lowerCaseQuery) ||
-          (product.brand && product.brand.name.toLowerCase().includes(lowerCaseQuery))
-      );
-      setFilteredProducts(filtered);
-    }
-    // Reset pagination when search query changes
-    setPage(1);
-  }, [debouncedSearchQuery, products]);
-
-  // Update displayed products based on filtered results
-  useEffect(() => {
-    setDisplayedProducts(filteredProducts);
-  }, [filteredProducts]);
-
-  // Stock change handling
-  const handleStockChange = (productId: string, value: string) => {
-    const numValue = parseInt(value, 10);
-    if (isNaN(numValue)) return;
-
-    setStockAdjustments((prev) => ({
-      ...prev,
-      [productId]: {
-        productId,
-        newStock: numValue,
-        status: prev[productId]?.status || "pending",
-      },
-    }));
-  };
-
-  const handleStockStatusChange = (productId: string, status: "done" | "cancelled") => {
-    const adjustment = stockAdjustments[productId];
-    if (!adjustment) return;
-
-    if (status === "done") {
-      updateProductStock(productId, adjustment.newStock);
-    } else {
-      // If cancelled, remove from adjustments or reset to current stock
-      const currentProduct = products.find(p => p.id === productId);
-      if (currentProduct) {
-        setStockAdjustments((prev) => ({
-          ...prev,
-          [productId]: {
-            ...prev[productId],
-            newStock: currentProduct.piecesLeft || 0,
-            status: "cancelled",
-          },
-        }));
-      }
-    }
-  };
-
-  // Offers handling
-  const toggleEditOffers = (productId: string | null) => {
-    setEditingOffers(productId);
-
-    // If we're starting to edit a product's offers, initialize the adjustment
-    if (productId && !offerAdjustments[productId]) {
-      const product = products.find(p => p.id === productId);
-      if (product) {
-        setOfferAdjustments((prev) => ({
-          ...prev,
-          [productId]: {
-            productId,
-            offers: { ...(product.offers as Record<string, number>) },
-            status: "pending"
-          }
-        }));
-      }
-    }
-  };
-
-  const handleQuantityChange = (productId: string, oldQuantity: string, newQuantityStr: string) => {
-    const newQuantity = parseInt(newQuantityStr, 10);
-    if (isNaN(newQuantity) || newQuantity < 1) return;
-
-    setOfferAdjustments((prev) => {
-      const currentOffers = { ...(prev[productId]?.offers || {}) };
-      const currentDiscount = currentOffers[oldQuantity];
-
-      // Remove the old quantity entry
-      delete currentOffers[oldQuantity];
-
-      // Add the new quantity entry with the same discount
-      currentOffers[newQuantity.toString()] = currentDiscount;
-
-      return {
-        ...prev,
-        [productId]: {
-          productId,
-          offers: currentOffers,
-          status: prev[productId]?.status || "pending"
-        }
-      };
-    });
-  };
-
-  const handleOfferChange = (productId: string, quantity: string, discount: string) => {
-    const discountValue = parseFloat(discount);
-    if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) return;
-
-    setOfferAdjustments((prev) => {
-      const currentOffers = prev[productId]?.offers || {};
-      return {
-        ...prev,
-        [productId]: {
-          productId,
-          offers: {
-            ...currentOffers,
-            [quantity]: discountValue
-          },
-          status: prev[productId]?.status || "pending"
-        }
-      };
-    });
-  };
-
-  const handleAddOffer = (productId: string) => {
-    const adjustment = offerAdjustments[productId];
-    if (!adjustment) {
-      // Initialize adjustment if it doesn't exist
-      const product = products.find(p => p.id === productId);
-      if (product) {
-        setOfferAdjustments((prev) => ({
-          ...prev,
-          [productId]: {
-            productId,
-            offers: { ...(product.offers as Record<string, number>) },
-            status: "pending"
-          }
-        }));
-        return;
-      }
-    }
-
-    // Find a new quantity that doesn't already exist
-    const existingQuantities = Object.keys(adjustment.offers).map(Number).sort((a, b) => a - b);
-    const newQuantity = existingQuantities.length > 0 ? (existingQuantities[existingQuantities.length - 1] + 1).toString() : "2";
-
-    setOfferAdjustments((prev) => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        offers: {
-          ...prev[productId].offers,
-          [newQuantity]: 0
-        }
-      }
-    }));
-  };
-
-  const handleRemoveOffer = (productId: string, quantity: string) => {
-    // Don't allow removing the base offer (quantity 1)
-    if (quantity === "1") return;
-
-    setOfferAdjustments((prev) => {
-      const currentOffers = { ...prev[productId].offers };
-      delete currentOffers[quantity];
-      return {
-        ...prev,
-        [productId]: {
-          ...prev[productId],
-          offers: currentOffers
-        }
-      };
-    });
-  };
-
-  const handleOfferStatusChange = (productId: string, status: "done" | "cancelled") => {
-    const adjustment = offerAdjustments[productId];
-    if (!adjustment) return;
-
-    if (status === "done") {
-      updateProductOffers(productId, adjustment.offers);
-    } else {
-      // If cancelled, reset to original offers
-      const currentProduct = products.find(p => p.id === productId);
-      if (currentProduct) {
-        setOfferAdjustments((prev) => ({
-          ...prev,
-          [productId]: {
-            ...prev[productId],
-            offers: { ...(currentProduct.offers as Record<string, number>) },
-            status: "cancelled"
-          }
-        }));
-      }
-    }
-
-    // Exit edit mode
-    setEditingOffers(null);
-  };
-
-  // API calls
-  const updateProductStock = async (productId: string, newStock: number) => {
-    setIsSubmitting(true);
-    setMessage({ type: "", text: "" });
-
-    try {
-      const response = await fetch(`/api/admin/product/${productId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ piecesLeft: newStock }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update stock");
-      }
-
-      // Update local state
-      setProducts((prevProducts) =>
-        prevProducts.map((p) =>
-          p.id === productId ? { ...p, piecesLeft: newStock } : p
-        )
-      );
-
-      // Update adjustments
-      setStockAdjustments((prev) => ({
-        ...prev,
-        [productId]: {
-          ...prev[productId],
-          status: "done",
-        },
-      }));
-
-      setMessage({ type: "success", text: "Stock updated successfully" });
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      setMessage({ type: "error", text: "Failed to update stock" });
-
-      // Mark as cancelled on error
-      setStockAdjustments((prev) => ({
-        ...prev,
-        [productId]: {
-          ...prev[productId],
-          status: "cancelled",
-        },
-      }));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const updateProductOffers = async (productId: string, offers: Record<string, number>) => {
-    setIsSubmitting(true);
-    setUpdatingOffers(prev => ({ ...prev, [productId]: true }));
-    setMessage({ type: "", text: "" });
-
-    try {
-      const response = await fetch(`/api/admin/product/${productId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ offers }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update offers");
-      }
-
-      // Update local state
-      setProducts((prevProducts) =>
-        prevProducts.map((p) =>
-          p.id === productId ? { ...p, offers } : p
-        )
-      );
-
-      // Update adjustments
-      setOfferAdjustments((prev) => ({
-        ...prev,
-        [productId]: {
-          ...prev[productId],
-          status: "done",
-        },
-      }));
-
-      setMessage({ type: "success", text: "Offers updated successfully" });
-    } catch (error) {
-      console.error("Error updating offers:", error);
-      setMessage({ type: "error", text: "Failed to update offers" });
-
-      // Mark as cancelled on error
-      setOfferAdjustments((prev) => ({
-        ...prev,
-        [productId]: {
-          ...prev[productId],
-          status: "cancelled",
-        },
-      }));
-    } finally {
-      setIsSubmitting(false);
-      setUpdatingOffers(prev => ({ ...prev, [productId]: false }));
-    }
-  };
-
-  // Helper function to calculate discount price
-  const calculatePrice = (mrp: number, discount: number) => {
-    return mrp * (1 - discount / 100);
-  };
+  }, [message.text]);
 
   return (
     <div className="bg-white dark:bg-neutral-900 shadow-sm">
       {/* Search and Message Bar */}
-      <div className="p-4 border-b dark:border-neutral-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-5 w-5" />
-          <Input
-            type="text"
-            placeholder="Search products..."
-            className="!pl-10 pr-4 py-2 w-full border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-white"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <SearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        message={message}
+      />
 
-        {message.text && (
-          <div className={`px-4 py-2 rounded-lg text-sm ${message.type === "success"
-            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-            }`}>
-            {message.text}
-          </div>
-        )}
-      </div>
-
-      {/* Products Accordion List */}
+      {/* Products List */}
       <div className="p-4">
-        {displayedProducts.length > 0 ? (
+        {isInitialLoading ? (
           <div className="space-y-3">
-            {displayedProducts.map((product, index) => {
-              const isLast = index === displayedProducts.length - 1;
+            {Array.from({ length: 5 }).map((_, index) => (
+              <ProductSkeleton key={`initial-skeleton-${index}`} />
+            ))}
+          </div>
+        ) : products.length > 0 ? (
+          <div className="space-y-3">
+            {products.map((product, index) => {
+              const isLast = index === products.length - 1;
               const isExpanded = expandedProduct === product.id;
               const stockAdjustment = stockAdjustments[product.id];
               const offerAdjustment = offerAdjustments[product.id];
               const isEditingOffers = editingOffers === product.id;
-              const productOffers = isEditingOffers && offerAdjustment
-                ? offerAdjustment.offers
-                : (product.offers as Record<string, number>);
+              const isUpdatingOffers = updatingOffers[product.id] || false;
 
               return (
-                <div
+                <ProductCard
                   key={product.id}
-                  ref={isLast && hasMore ? lastProductElementRef : undefined}
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden bg-white dark:bg-neutral-800"
-                >
-                  {/* Accordion Header */}
-                  <div
-                    className="p-4 flex items-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-                    onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
-                  >
-                    <div className="flex items-center flex-1 gap-4">
-                      <div className="relative h-16 w-16 cursor-pointer" onClick={()=> router.push(`/admin/products/edit/${product.id}`)}>
-                        {product.images && product.images.length > 0 ? (
-                          <ProductImage
-                            src={product.images[0]}
-                            alt={formatProductName(product)}
-                            fill
-                            sizes="(max-width: 768px) 48px, 64px"
-                            className="object-cover rounded-md"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="h-16 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-md flex items-center justify-center">
-                            <span className="text-neutral-400 dark:text-neutral-500 text-xs">No image</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg sm:text-xl font-medium text-neutral-900 dark:text-neutral-100">
-                          {formatProductName(product)}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
-                          {product.weight && <span>Weight: {product.weight}</span>}
-                          <span>MRP: ₹{product.mrp.toFixed(2)}</span>
-                          <span>Base Discount: {product.offers && (product.offers as Record<string, number>)["1"] || 0}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="ml-2">
-                      {isExpanded ? (
-                        <ChevronUp className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Accordion Content */}
-                  {isExpanded && (
-                    <div className="sm:p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6">
-                        {/* Stock Management Section */}
-                        <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm relative">
-                          {updatingOffers[product.id] && (
-                            <div className="absolute inset-0 bg-white/80 dark:bg-neutral-800/80 rounded-lg flex items-center justify-center z-10">
-                              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span className="text-sm font-medium">Updating offers...</span>
-                              </div>
-                            </div>
-                          )}                          <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Stock Management</h4>
-
-                          <div className="flex items-center gap-4 mb-4">
-                            <div className="flex-1">
-                              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                Current Stock
-                              </label>
-                              <div className="text-neutral-900 dark:text-neutral-100 font-medium">
-                                {product.piecesLeft !== null ? product.piecesLeft : "N/A"}
-                              </div>
-                            </div>
-
-                            <div className="flex-1">
-                              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                New Stock
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                value={stockAdjustment?.newStock ?? product.piecesLeft ?? 0}
-                                onChange={(e) => handleStockChange(product.id, e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md dark:bg-neutral-700 dark:text-white ${stockAdjustment?.status === "done"
-                                  ? "border-green-500 dark:border-green-600"
-                                  : stockAdjustment?.status === "cancelled"
-                                    ? "border-red-500 dark:border-red-600"
-                                    : "border-neutral-300 dark:border-neutral-600"
-                                  }`}
-                                disabled={stockAdjustment?.status === "done" || stockAdjustment?.status === "cancelled" || isSubmitting}
-                                onFocus={(e) => e.target.select()}
-                                inputMode="numeric"
-                              />
-                            </div>
-                          </div>
-
-                          {stockAdjustment && stockAdjustment.newStock !== product.piecesLeft && stockAdjustment.status === "pending" && (
-                            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 sm:gap-0">
-                              <button
-                                onClick={() => handleStockStatusChange(product.id, "done")}
-                                disabled={isSubmitting}
-                                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm flex items-center gap-1 disabled:opacity-50"
-                              >
-                                <CheckCircle size={16} />
-                                Update
-                              </button>
-                              <button
-                                onClick={() => handleStockStatusChange(product.id, "cancelled")}
-                                disabled={isSubmitting}
-                                className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1 disabled:opacity-50"
-                              >
-                                <XCircle size={16} />
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-
-                          {stockAdjustment?.status === "done" && (
-                            <div className="mt-2 text-green-600 dark:text-green-500 text-sm flex items-center gap-1">
-                              <CheckCircle size={16} />
-                              <span>Stock updated successfully</span>
-                            </div>
-                          )}
-
-                          {stockAdjustment?.status === "cancelled" && (
-                            <div className="mt-2 text-red-600 dark:text-red-500 text-sm flex items-center gap-1">
-                              <XCircle size={16} />
-                              <span>Update cancelled</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Offers Management Section */}
-                        <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Quantity Offers</h4>
-
-                            {!isEditingOffers ? (
-                              <button
-                                onClick={() => toggleEditOffers(product.id)}
-                                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                                disabled={updatingOffers[product.id]}
-                              >
-                                <Edit size={16} />
-                                {updatingOffers[product.id] ? 'Updating...' : 'Edit Offers'}
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleAddOffer(product.id)}
-                                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm flex items-center gap-1"
-                                disabled={isSubmitting}
-                              >
-                                <PlusCircle size={16} />
-                                Add Offer
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                            {Object.entries(productOffers || {})
-                              .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                              .map(([quantity, discount], index) => (
-                                <div key={`${product.id}-offer-${index}`} className="grid grid-cols-[auto_auto_1fr_auto] sm:flex sm:items-center gap-2 sm:gap-3">
-                                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
-                                    {isEditingOffers && quantity !== "1" ? (
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        value={quantity}
-                                        onChange={(e) => handleQuantityChange(product.id, quantity, e.target.value)}
-                                        className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-                                        disabled={isSubmitting}
-                                        onFocus={(e) => e.target.select()}
-                                        inputMode="numeric"
-                                        onKeyDown={(e) => e.stopPropagation()}
-                                      />
-                                    ) : (
-                                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-                                        {quantity}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount</div>
-                                    {isEditingOffers ? (
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        step="0.1"
-                                        value={discount}
-                                        onChange={(e) => handleOfferChange(product.id, quantity, e.target.value)}
-                                        className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-                                        disabled={isSubmitting}
-                                        onFocus={(e) => e.target.select()}
-                                        inputMode="decimal"
-                                        onKeyDown={(e) => e.stopPropagation()}
-                                      />
-                                    ) : (
-                                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-                                        {discount}%
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md flex-1">
-                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Price</div>
-                                    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center">
-                                      ₹{calculatePrice(product.mrp, Number(discount)).toFixed(2)}
-                                    </div>
-                                  </div>
-
-                                  {isEditingOffers && quantity !== "1" && (
-                                    <button
-                                      onClick={() => handleRemoveOffer(product.id, quantity)}
-                                      className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-                                      title="Remove Offer"
-                                      disabled={isSubmitting}
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                          </div>
-
-                          {isEditingOffers && (
-                            <div className="mt-4 flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 sm:gap-0">
-                              <button
-                                onClick={() => handleOfferStatusChange(product.id, "done")}
-                                disabled={isSubmitting || updatingOffers[product.id]}
-                                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm flex items-center gap-1 disabled:opacity-50"
-                              >
-                                <CheckCircle size={16} />
-                                {updatingOffers[product.id] ? 'Saving...' : 'Save Offers'}
-                              </button>
-                              <button
-                                onClick={() => handleOfferStatusChange(product.id, "cancelled")}
-                                disabled={isSubmitting || updatingOffers[product.id]}
-                                className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1 disabled:opacity-50"
-                              >
-                                <XCircle size={16} />
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-
-                          {offerAdjustment?.status === "done" && (
-                            <div className="mt-2 text-green-600 dark:text-green-500 text-sm flex items-center gap-1">
-                              <CheckCircle size={16} />
-                              <span>Offers updated successfully</span>
-                            </div>
-                          )}
-
-                          {offerAdjustment?.status === "cancelled" && (
-                            <div className="mt-2 text-red-600 dark:text-red-500 text-sm flex items-center gap-1">
-                              <XCircle size={16} />
-                              <span>Update cancelled</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  product={product}
+                  isExpanded={isExpanded}
+                  isLast={isLast}
+                  hasMore={hasMore}
+                  debouncedSearchQuery={debouncedSearchQuery}
+                  stockAdjustment={stockAdjustment}
+                  offerAdjustment={offerAdjustment}
+                  isEditingOffers={isEditingOffers}
+                  isSubmitting={isSubmitting}
+                  isUpdatingOffers={isUpdatingOffers}
+                  lastProductElementRef={lastProductElementRef}
+                  onToggleExpand={setExpandedProduct}
+                  onStockChange={handleStockChange}
+                  onStockStatusChange={handleStockStatusChange}
+                  onToggleEditOffers={toggleEditOffers}
+                  onQuantityChange={handleQuantityChange}
+                  onOfferChange={handleOfferChange}
+                  onAddOffer={handleAddOffer}
+                  onRemoveOffer={handleRemoveOffer}
+                  onOfferStatusChange={handleOfferStatusChange}
+                />
               );
             })}
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-neutral-500 dark:text-neutral-400">No products found matching your search.</p>
+            <p className="text-neutral-500 dark:text-neutral-400">
+              {debouncedSearchQuery.trim() 
+                ? "No products found matching your search." 
+                : "No products available."
+              }
+            </p>
           </div>
         )}
 
-        {/* Loading indicator for infinite scroll */}
+        {/* Loading skeletons for infinite scroll */}
         {loading && !isInitialLoading && (
-          <div className="mt-4 flex justify-center">
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
-              <span className="text-sm text-neutral-500">Loading more products...</span>
-            </div>
+          <div className="space-y-3 mt-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <ProductSkeleton key={`skeleton-${index}`} />
+            ))}
           </div>
         )}
         
         {/* End of results indicator */}
-        {!hasMore && displayedProducts.length > 0 && !loading && (
+        {!hasMore && products.length > 0 && !loading && !debouncedSearchQuery.trim() && (
           <div className="mt-4 text-center text-sm text-neutral-500">
             No more products to load
           </div>
