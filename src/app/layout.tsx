@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Agra Ecom",
   description: "Your one-stop shop for all your needs",
   icons: {
-    icon: "/favicon-new.png",
+    icon: "/faviconNew.png",
   },
 };
 
