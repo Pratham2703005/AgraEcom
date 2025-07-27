@@ -63,9 +63,6 @@ app/
 └── verify-email/           # Email verification handler
 ```
 
-![App Structure](./docs/images/structure/app-structure.png)
-*Next.js App Router structure visualization*
-
 ### Admin Dashboard (`src/app/admin/`)
 
 Complete admin management system with dedicated routes:
@@ -93,8 +90,7 @@ admin/
     └── analytics/          # User analytics
 ```
 
-![Admin Structure](./docs/images/structure/admin-structure.png)
-*Admin dashboard structure*
+
 
 ### API Routes (`src/app/api/`)
 
@@ -145,8 +141,7 @@ components/
 └── ThemeToggle.tsx          # Dark/light mode toggle
 ```
 
-![Components Structure](./docs/images/structure/components-structure.png)
-*Component hierarchy and relationships*
+
 
 ### UI Components (`src/components/ui/`)
 
@@ -183,8 +178,6 @@ lib/
 └── utils.ts                 # General utilities
 ```
 
-![Lib Structure](./docs/images/structure/lib-structure.png)
-*Library and utilities organization*
 
 ### Key Utility Files
 
@@ -274,9 +267,6 @@ emails/
 └── verification-email.tsx   # Email verification template
 ```
 
-![Email Template](./docs/images/structure/email-template.png)
-*Email template structure*
-
 ## 🗄️ Database Schema (`prisma/`)
 
 Database schema and configuration:
@@ -314,9 +304,6 @@ model Product {
   // ... other fields and indexes
 }
 ```
-
-![Database Schema](./docs/images/structure/database-schema.png)
-*Database relationships and structure*
 
 ## 🎨 Styling Architecture
 
@@ -438,8 +425,7 @@ import type { Product } from '@/types'
 npm run build && npx @next/bundle-analyzer
 ```
 
-![Bundle Analysis](./docs/images/structure/bundle-analysis.png)
-*Bundle size analysis and optimization*
+
 
 ## 🚀 Scalability Architecture
 
