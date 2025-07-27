@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { memo } from "react";
 import { formatProductName } from "@/lib/utils";
 import ProductImage from "@/components/ui/product-image";
 import { Product, StockAdjustment, OfferAdjustment } from "../types";
@@ -24,12 +25,13 @@ interface ProductCardProps {
   onToggleEditOffers: (productId: string | null) => void;
   onQuantityChange: (productId: string, oldQuantity: string, newQuantity: string) => void;
   onOfferChange: (productId: string, quantity: string, discount: string) => void;
+  onPriceChange: (productId: string, quantity: string, price: string) => void;
   onAddOffer: (productId: string) => void;
   onRemoveOffer: (productId: string, quantity: string) => void;
   onOfferStatusChange: (productId: string, status: "done" | "cancelled") => void;
 }
 
-export const ProductCard = ({
+const ProductCardComponent = ({
   product,
   isExpanded,
   isLast,
@@ -47,6 +49,7 @@ export const ProductCard = ({
   onToggleEditOffers,
   onQuantityChange,
   onOfferChange,
+  onPriceChange,
   onAddOffer,
   onRemoveOffer,
   onOfferStatusChange
@@ -128,6 +131,7 @@ export const ProductCard = ({
               onToggleEdit={onToggleEditOffers}
               onQuantityChange={onQuantityChange}
               onOfferChange={onOfferChange}
+              onPriceChange={onPriceChange}
               onAddOffer={onAddOffer}
               onRemoveOffer={onRemoveOffer}
               onStatusChange={onOfferStatusChange}
@@ -138,3 +142,22 @@ export const ProductCard = ({
     </div>
   );
 };
+
+// Memoize the component for better performance
+export const ProductCard = memo(ProductCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.isLast === nextProps.isLast &&
+    prevProps.hasMore === nextProps.hasMore &&
+    prevProps.debouncedSearchQuery === nextProps.debouncedSearchQuery &&
+    prevProps.isEditingOffers === nextProps.isEditingOffers &&
+    prevProps.isSubmitting === nextProps.isSubmitting &&
+    prevProps.isUpdatingOffers === nextProps.isUpdatingOffers &&
+    JSON.stringify(prevProps.stockAdjustment) === JSON.stringify(nextProps.stockAdjustment) &&
+    JSON.stringify(prevProps.offerAdjustment) === JSON.stringify(nextProps.offerAdjustment) &&
+    prevProps.product.piecesLeft === nextProps.product.piecesLeft &&
+    JSON.stringify(prevProps.product.offers) === JSON.stringify(nextProps.product.offers)
+  );
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Product } from "../types";
 
 export function useProductSearch() {
@@ -12,6 +12,7 @@ export function useProductSearch() {
   
   const isLoadingRef = useRef(false);
   const loadedPagesRef = useRef(new Set<number>());
+  const searchCacheRef = useRef(new Map<string, Product[]>());
   const productsPerPage = 20;
 
   // Debounce search query
@@ -25,9 +26,18 @@ export function useProductSearch() {
 
   // Load products from API with search support
   const loadProducts = useCallback(async (pageToLoad: number, searchTerm: string = "", isInitial: boolean = false) => {
+    // Check cache for search results
+    if (searchTerm && searchCacheRef.current.has(searchTerm)) {
+      const cachedResults = searchCacheRef.current.get(searchTerm)!;
+      setProducts(cachedResults);
+      setHasMore(false);
+      setLoading(false);
+      if (isInitial) setIsInitialLoading(false);
+      return;
+    }
+
     // Prevent duplicate loading
     if (isLoadingRef.current || (!searchTerm && loadedPagesRef.current.has(pageToLoad))) {
-      console.log(`Skipping load for page ${pageToLoad} - already loading or loaded`);
       return;
     }
     
@@ -59,13 +69,16 @@ export function useProductSearch() {
       const newProducts = data.products || [];
       const pagination = data.pagination || {};
       
-      console.log(`Loaded ${newProducts.length} products for page ${pageToLoad}. Has more: ${pagination.hasMore}`);
-      
       setHasMore(pagination.hasMore || false);
       
       if (newProducts.length === 0) {
         setHasMore(false);
         return;
+      }
+      
+      // Cache search results
+      if (searchTerm && pageToLoad === 1) {
+        searchCacheRef.current.set(searchTerm, newProducts);
       }
       
       if (!searchTerm) {
@@ -83,9 +96,7 @@ export function useProductSearch() {
             setHasMore(false);
           }
           
-          const updatedProducts = [...prev, ...uniqueNewProducts];
-          console.log(`Total products after page ${pageToLoad}: ${updatedProducts.length}`);
-          return updatedProducts;
+          return [...prev, ...uniqueNewProducts];
         });
       }
     } catch (error) {
@@ -141,8 +152,11 @@ export function useProductSearch() {
     }
   }, [page, hasMore, loading, debouncedSearchQuery, loadProducts]);
 
+  // Memoize products to prevent unnecessary re-renders
+  const memoizedProducts = useMemo(() => products, [products]);
+
   return {
-    products,
+    products: memoizedProducts,
     loading,
     hasMore,
     searchQuery,

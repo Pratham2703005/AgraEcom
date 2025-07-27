@@ -1,5 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { OfferAdjustment, Product, Message } from "../types";
+import { validateAllOffers } from "../validation";
+import { calculateDiscountFromPrice } from "../utils";
 
 export function useOfferAdjustments(
   products: Product[],
@@ -88,19 +90,23 @@ export function useOfferAdjustments(
     }
 
     const discountValue = parseFloat(discount);
-    if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) return;
+    // Remove restrictions - allow any value during editing
+    if (isNaN(discountValue)) return;
+
+    // Limit to 2 decimal places
+    const formattedDiscount = Math.round(discountValue * 100) / 100;
 
     setOfferAdjustments((prev) => {
       const currentOffers = prev[productId]?.offers || {};
       
-      // Clear temp edit state
+      // Clear temp edit states
       const newState = {
         ...prev,
         [productId]: {
           productId,
           offers: {
             ...currentOffers,
-            [quantity]: discountValue
+            [quantity]: formattedDiscount
           },
           status: prev[productId]?.status || "pending"
         }
@@ -108,10 +114,68 @@ export function useOfferAdjustments(
       if ('tempDiscountEdit' in newState[productId]) {
         delete (newState[productId] as OfferAdjustment).tempDiscountEdit;
       }
+      if ('tempPriceEdit' in newState[productId]) {
+        delete (newState[productId] as OfferAdjustment).tempPriceEdit;
+      }
 
       return newState;
     });
   }, []);
+
+  const handlePriceChange = useCallback((productId: string, quantity: string, price: string) => {
+    // Allow empty string for better UX while typing
+    if (price === "") {
+      // Store empty state temporarily
+      setOfferAdjustments((prev) => ({
+        ...prev,
+        [productId]: {
+          ...prev[productId],
+          tempPriceEdit: { quantity, newValue: "" }
+        }
+      }));
+      return;
+    }
+
+    const priceValue = parseFloat(price);
+    // Remove restrictions - allow any value during editing
+    if (isNaN(priceValue)) return;
+
+    // Limit to 2 decimal places
+    const formattedPrice = Math.round(priceValue * 100) / 100;
+
+    // Find the product to get MRP
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Calculate discount from price
+    const discount = calculateDiscountFromPrice(product.mrp, formattedPrice);
+    const formattedDiscount = Math.round(discount * 100) / 100;
+
+    setOfferAdjustments((prev) => {
+      const currentOffers = prev[productId]?.offers || {};
+      
+      // Clear temp edit states
+      const newState = {
+        ...prev,
+        [productId]: {
+          productId,
+          offers: {
+            ...currentOffers,
+            [quantity]: formattedDiscount
+          },
+          status: prev[productId]?.status || "pending"
+        }
+      };
+      if ('tempDiscountEdit' in newState[productId]) {
+        delete (newState[productId] as OfferAdjustment).tempDiscountEdit;
+      }
+      if ('tempPriceEdit' in newState[productId]) {
+        delete (newState[productId] as OfferAdjustment).tempPriceEdit;
+      }
+
+      return newState;
+    });
+  }, [products]);
 
   const handleAddOffer = useCallback((productId: string) => {
     const adjustment = offerAdjustments[productId];
@@ -215,12 +279,36 @@ export function useOfferAdjustments(
     }
   }, [setProducts, setMessage]);
 
+  const validateOffers = useCallback((productId: string): boolean => {
+    const adjustment = offerAdjustments[productId];
+    const product = products.find(p => p.id === productId);
+    if (!adjustment || !product) return false;
+
+    const validationErrors = validateAllOffers(adjustment.offers, product.mrp);
+    
+    setOfferAdjustments((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        validationErrors
+      }
+    }));
+
+    return Object.keys(validationErrors).length === 0;
+  }, [offerAdjustments, products]);
+
   const handleOfferStatusChange = useCallback((productId: string, status: "done" | "cancelled") => {
     const adjustment = offerAdjustments[productId];
     if (!adjustment) return;
 
     if (status === "done") {
-      updateProductOffers(productId, adjustment.offers);
+      // Validate before saving
+      if (validateOffers(productId)) {
+        updateProductOffers(productId, adjustment.offers);
+      } else {
+        setMessage({ type: "error", text: "Please fix validation errors before saving" });
+        return;
+      }
     } else {
       // If cancelled, reset to original offers
       const currentProduct = products.find(p => p.id === productId);
@@ -230,7 +318,8 @@ export function useOfferAdjustments(
           [productId]: {
             ...prev[productId],
             offers: { ...(currentProduct.offers as Record<string, number>) },
-            status: "cancelled"
+            status: "cancelled",
+            validationErrors: undefined
           }
         }));
       }
@@ -238,17 +327,34 @@ export function useOfferAdjustments(
 
     // Exit edit mode
     setEditingOffers(null);
-  }, [offerAdjustments, products, updateProductOffers]);
+  }, [offerAdjustments, products, updateProductOffers, validateOffers, setMessage]);
 
-  return {
+  // Memoize the return object to prevent unnecessary re-renders
+  const memoizedReturn = useMemo(() => ({
     offerAdjustments,
     editingOffers,
     updatingOffers,
     toggleEditOffers,
     handleQuantityChange,
     handleOfferChange,
+    handlePriceChange,
     handleAddOffer,
     handleRemoveOffer,
-    handleOfferStatusChange
-  };
+    handleOfferStatusChange,
+    validateOffers
+  }), [
+    offerAdjustments,
+    editingOffers,
+    updatingOffers,
+    toggleEditOffers,
+    handleQuantityChange,
+    handleOfferChange,
+    handlePriceChange,
+    handleAddOffer,
+    handleRemoveOffer,
+    handleOfferStatusChange,
+    validateOffers
+  ]);
+
+  return memoizedReturn;
 }

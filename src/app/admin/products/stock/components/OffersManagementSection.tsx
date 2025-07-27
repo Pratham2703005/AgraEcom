@@ -1,5 +1,7 @@
-import { CheckCircle, XCircle, Edit, PlusCircle, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react";
 import { Product, OfferAdjustment } from "../types";
+import { calculatePriceFromDiscount, formatPrice, formatDiscount } from "../utils";
+import CustomLoader from "@/components/CustomLoader";
 
 interface OffersManagementSectionProps {
   product: Product;
@@ -9,15 +11,12 @@ interface OffersManagementSectionProps {
   onToggleEdit: (productId: string | null) => void;
   onQuantityChange: (productId: string, oldQuantity: string, newQuantity: string) => void;
   onOfferChange: (productId: string, quantity: string, discount: string) => void;
+  onPriceChange: (productId: string, quantity: string, price: string) => void;
   onAddOffer: (productId: string) => void;
   onRemoveOffer: (productId: string, quantity: string) => void;
   onStatusChange: (productId: string, status: "done" | "cancelled") => void;
 }
 
-// Helper function to calculate discount price
-const calculatePrice = (mrp: number, discount: number) => {
-  return mrp * (1 - discount / 100);
-};
 
 export const OffersManagementSection = ({
   product,
@@ -27,6 +26,7 @@ export const OffersManagementSection = ({
   onToggleEdit,
   onQuantityChange,
   onOfferChange,
+  onPriceChange,
   onAddOffer,
   onRemoveOffer,
   onStatusChange
@@ -39,10 +39,13 @@ export const OffersManagementSection = ({
     <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow-sm relative">
       {isUpdatingOffers && (
         <div className="absolute inset-0 bg-white/80 dark:bg-neutral-800/80 rounded-lg flex items-center justify-center z-10">
-          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+          {/* <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-medium">Updating offers...</span>
-          </div>
+            <span className="text-sm font-medium">Updating offers...</span> 
+          </div> */}
+          <div className="mx-auto max-w-7xl px-4 py-8 h-[calc(100vh-100px)] flex justify-center items-center">
+            <CustomLoader size="sm" />
+        </div>
         </div>
       )}
 
@@ -78,6 +81,8 @@ export const OffersManagementSection = ({
             // Check for temporary edit states
             const tempQuantityEdit = offerAdjustment?.tempQuantityEdit;
             const tempDiscountEdit = offerAdjustment?.tempDiscountEdit;
+            const tempPriceEdit = offerAdjustment?.tempPriceEdit;
+            const validationErrors = offerAdjustment?.validationErrors?.[quantity] || [];
             
             const displayQuantity = tempQuantityEdit?.oldQuantity === quantity 
               ? tempQuantityEdit.newValue 
@@ -85,91 +90,159 @@ export const OffersManagementSection = ({
             
             const displayDiscount = tempDiscountEdit?.quantity === quantity 
               ? tempDiscountEdit.newValue 
-              : discount.toString();
+              : formatDiscount(discount);
+
+            const calculatedPrice = calculatePriceFromDiscount(product.mrp, Number(displayDiscount || discount));
+            // const displayPrice = tempPriceEdit?.quantity === quantity 
+            //   ? tempPriceEdit.newValue 
+            //   : formatPrice(calculatedPrice);
+
+            // Get field-specific errors
+            const quantityErrors = validationErrors.filter(e => e.field === 'quantity');
+            const discountErrors = validationErrors.filter(e => e.field === 'discount');
+            const priceErrors = validationErrors.filter(e => e.field === 'price');
 
             return (
-              <div key={`${product.id}-offer-${index}`} className="grid grid-cols-[auto_auto_1fr_auto] sm:flex sm:items-center gap-2 sm:gap-3">
-                <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
-                  {isEditingOffers && quantity !== "1" ? (
-                    <input
-                      type="number"
-                      min="1"
-                      value={displayQuantity}
-                      onChange={(e) => onQuantityChange(product.id, quantity, e.target.value)}
-                      onBlur={(e) => {
-                        // If empty on blur, revert to original value
-                        if (e.target.value === "") {
-                          onQuantityChange(product.id, quantity, quantity);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                        if (e.key === 'Enter') {
-                          e.currentTarget.blur();
-                        }
-                      }}
-                      className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-                      onFocus={(e) => e.target.select()}
-                      inputMode="numeric"
-                      placeholder="Qty"
-                    />
-                  ) : (
-                    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-                      {quantity}
-                    </div>
-                  )}
-                </div>
-
-                <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount</div>
-                  {isEditingOffers ? (
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={displayDiscount}
-                      onChange={(e) => onOfferChange(product.id, quantity, e.target.value)}
-                      onBlur={(e) => {
-                        // If empty on blur, revert to original value
-                        if (e.target.value === "") {
-                          onOfferChange(product.id, quantity, discount.toString());
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                        if (e.key === 'Enter') {
-                          e.currentTarget.blur();
-                        }
-                      }}
-                      className="w-full text-center bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded py-1 px-1 text-sm h-8"
-                      onFocus={(e) => e.target.select()}
-                      inputMode="decimal"
-                      placeholder="%"
-                    />
-                  ) : (
-                    <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
-                      {discount}%
-                    </div>
-                  )}
-                </div>
-
-                <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md flex-1">
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Price</div>
-                  <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center">
-                    ₹{calculatePrice(product.mrp, Number(displayDiscount || discount)).toFixed(2)}
+              <div key={`${product.id}-offer-${index}`} className="space-y-2">
+                <div className="grid grid-cols-[auto_auto_auto_auto] sm:flex sm:items-start gap-2 sm:gap-3">
+                  {/* Quantity Field */}
+                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Quantity</div>
+                    {isEditingOffers && quantity !== "1" ? (
+                      <input
+                        type="number"
+                        value={displayQuantity}
+                        onChange={(e) => onQuantityChange(product.id, quantity, e.target.value)}
+                        onBlur={(e) => {
+                          if (e.target.value === "") {
+                            onQuantityChange(product.id, quantity, quantity);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        className={`w-full text-center bg-white dark:bg-neutral-600 border rounded py-1 px-1 text-sm h-8 ${
+                          quantityErrors.length > 0 
+                            ? 'border-red-500 dark:border-red-400' 
+                            : 'border-neutral-300 dark:border-neutral-500'
+                        }`}
+                        onFocus={(e) => e.target.select()}
+                        inputMode="numeric"
+                        placeholder="Qty"
+                      />
+                    ) : (
+                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
+                        {quantity}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Discount Field */}
+                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[80px] text-center">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Discount</div>
+                    {isEditingOffers ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={
+                          tempDiscountEdit?.quantity === quantity 
+                            ? tempDiscountEdit.newValue 
+                            : discount.toString()
+                        }
+                        onChange={(e) => onOfferChange(product.id, quantity, e.target.value)}
+                        onBlur={(e) => {
+                          if (e.target.value === "") {
+                            onOfferChange(product.id, quantity, discount.toString());
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        className={`w-full text-center bg-white dark:bg-neutral-600 border rounded py-1 px-1 text-sm h-8 ${
+                          discountErrors.length > 0 
+                            ? 'border-red-500 dark:border-red-400' 
+                            : 'border-neutral-300 dark:border-neutral-500'
+                        }`}
+                        onFocus={(e) => e.target.select()}
+                        inputMode="decimal"
+                        placeholder="%"
+                      />
+                    ) : (
+                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
+                        {formatDiscount(discount)}%
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Price Field */}
+                  <div className="px-2 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-md w-[100px] text-center">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Price</div>
+                    {isEditingOffers ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={
+                          tempPriceEdit?.quantity === quantity
+                            ? tempPriceEdit.newValue
+                            : formatPrice(calculatePriceFromDiscount(product.mrp, Number(discount)))
+                        }
+                        onChange={(e) => onPriceChange(product.id, quantity, e.target.value)}
+                        onBlur={(e) => {
+                          if (e.target.value === "") {
+                            const defaultPrice = calculatePriceFromDiscount(product.mrp, discount);
+                            onPriceChange(product.id, quantity, formatPrice(defaultPrice));
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        className={`w-full text-center bg-white dark:bg-neutral-600 border rounded py-1 px-1 text-sm h-8 ${
+                          priceErrors.length > 0 
+                            ? 'border-red-500 dark:border-red-400' 
+                            : 'border-neutral-300 dark:border-neutral-500'
+                        }`}
+                        onFocus={(e) => e.target.select()}
+                        inputMode="decimal"
+                        placeholder="₹"
+                      />
+                    ) : (
+                      <div className="font-medium text-neutral-900 dark:text-neutral-100 h-8 flex items-center justify-center">
+                        ₹{formatPrice(calculatedPrice)}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Remove Button */}
+                  {isEditingOffers && quantity !== "1" && (
+                    <button
+                      onClick={() => onRemoveOffer(product.id, quantity)}
+                      className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                      title="Remove Offer"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
 
-                {isEditingOffers && quantity !== "1" && (
-                  <button
-                    onClick={() => onRemoveOffer(product.id, quantity)}
-                    className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-                    title="Remove Offer"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                {/* Validation Errors */}
+                {isEditingOffers && validationErrors.length > 0 && (
+                  <div className="ml-2 space-y-1">
+                    {validationErrors.map((error, errorIndex) => (
+                      <div key={errorIndex} className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                        <AlertCircle size={12} />
+                        <span>{error.message}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             );

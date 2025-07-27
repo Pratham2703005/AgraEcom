@@ -24,12 +24,19 @@ export type StockAdjustment = {
   status: "pending" | "done" | "cancelled";
 };
 
+export type OfferValidationError = {
+  field: 'quantity' | 'discount' | 'price';
+  message: string;
+};
+
 export type OfferAdjustment = {
   productId: string;
   offers: Record<string, number>;
   status: "pending" | "done" | "cancelled";
   tempQuantityEdit?: { oldQuantity: string; newValue: string };
   tempDiscountEdit?: { quantity: string; newValue: string };
+  tempPriceEdit?: { quantity: string; newValue: string };
+  validationErrors?: Record<string, OfferValidationError[]>;
 };
 
 export type Message = {
