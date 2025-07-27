@@ -67,7 +67,7 @@ export const sendVerificationEmail = async (email: string, name: string) => {
     const verificationToken = await createVerificationToken(email);
     
     // Generate verification link
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'https://agraecom.vercel.app';
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken.token}`;
     
     // Render the email template

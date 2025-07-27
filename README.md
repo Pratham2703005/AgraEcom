@@ -2,7 +2,7 @@
 
 A full-featured e-commerce platform built with Next.js 15, featuring modern UI/UX, comprehensive admin management, and robust authentication system.
 
-![AgraEcom Homepage](./docs/images/homepage.png)
+![AgraEcom Homepage](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/homepage.png)
 
 ## 🚀 Quick Start
 
@@ -60,30 +60,28 @@ A full-featured e-commerce platform built with Next.js 15, featuring modern UI/U
 ## 📱 Screenshots
 
 ### Customer Experience
-![Product Catalog](./docs/images/product-catalog.png)
+![Product Catalog](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ProductSearch.png)
 *Browse products with advanced filtering and search*
 
-![Product Details](./docs/images/product-details.png)
+![Product Details](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ProductDetail.png)
 *Detailed product view with image gallery and offers*
 
-![Shopping Cart](./docs/images/shopping-cart.png)
+![Shopping Cart](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ShopCart.png)
 *Intuitive cart management with quantity adjustments*
 
-![Checkout Process](./docs/images/checkout.png)
+![Checkout Process](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/Checkout.png)
 *Streamlined checkout with address management*
 
 ### Admin Dashboard
-![Admin Dashboard](./docs/images/admin-dashboard.png)
+![Admin Dashboard](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/AdminDash.png)
 *Comprehensive admin dashboard with analytics*
 
-![Product Management](./docs/images/admin-products.png)
+![Product Management](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ProdManage.png)
 *Advanced product management with bulk operations*
 
-![Stock Management](./docs/images/stock-management.png)
+![Stock Management](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/StockManage.png)
 *Real-time stock management with offer adjustments*
 
-![Order Management](./docs/images/order-management.png)
-*Complete order tracking and management system*
 
 ## 🛠️ Tech Stack
 

@@ -12,12 +12,6 @@ This document provides a comprehensive overview of all features available in the
 - **Brand Integration**: Multi-brand product organization
 - **Search & Filter**: Advanced product discovery with multiple filters
 
-![Product Catalog](./docs/images/features/product-catalog.png)
-*Advanced product catalog with filtering and search capabilities*
-
-![Product Details](./docs/images/features/product-details.png)
-*Detailed product view with image gallery and dynamic pricing*
-
 ### Shopping Experience
 - **Shopping Cart**: Persistent cart with quantity management
 - **Wishlist**: Save products for later (coming soon)
@@ -25,21 +19,12 @@ This document provides a comprehensive overview of all features available in the
 - **Cart Persistence**: Cart items saved across sessions
 - **Mobile Optimized**: Responsive design for all devices
 
-![Shopping Cart](./docs/images/features/shopping-cart.png)
-*Intuitive shopping cart with quantity controls*
-
 ### Checkout & Orders
 - **Streamlined Checkout**: Multi-step checkout process
 - **Address Management**: Save and manage delivery addresses
 - **Order Tracking**: Real-time order status updates
 - **Order History**: Complete purchase history
 - **OTP Verification**: Secure order confirmation
-
-![Checkout Process](./docs/images/features/checkout-flow.png)
-*Streamlined checkout with address management*
-
-![Order Tracking](./docs/images/features/order-tracking.png)
-*Real-time order status tracking*
 
 ## 👤 User Management
 
@@ -50,10 +35,10 @@ This document provides a comprehensive overview of all features available in the
 - **Session Management**: Secure session handling with NextAuth.js
 - **Role-based Access**: Customer and Admin roles
 
-![Login Interface](./docs/images/features/login.png)
+![Login Interface](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/Login.png)
 *Clean and secure login interface*
 
-![Email Verification](./docs/images/features/email-verification.png)
+![Email Verification](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/Mail.png)
 *Email verification system*
 
 ### User Profiles
@@ -62,19 +47,6 @@ This document provides a comprehensive overview of all features available in the
 - **Order History**: View past purchases
 - **Account Settings**: Privacy and notification preferences
 
-![User Profile](./docs/images/features/user-profile.png)
-*Comprehensive user profile management*
-
-## 🔧 Admin Dashboard
-
-### Dashboard Overview
-- **Analytics Dashboard**: Key metrics and insights
-- **Quick Actions**: Fast access to common tasks
-- **Recent Activity**: Latest orders and user registrations
-- **Performance Metrics**: Sales and user analytics
-
-![Admin Dashboard](./docs/images/features/admin-dashboard.png)
-*Comprehensive admin dashboard with analytics*
 
 ### Product Management
 - **Product CRUD**: Create, read, update, delete products
@@ -83,10 +55,10 @@ This document provides a comprehensive overview of all features available in the
 - **Stock Tracking**: Real-time inventory management
 - **Offer Management**: Dynamic pricing and discounts
 
-![Admin Product Management](./docs/images/features/admin-products.png)
+![Admin Product Management](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ProdManage.png)
 *Advanced product management interface*
 
-![Stock Management](./docs/images/features/stock-management-detailed.png)
+![Stock Management](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/StockManage.png)
 *Real-time stock management with bulk operations*
 
 ### Order Management
@@ -95,8 +67,6 @@ This document provides a comprehensive overview of all features available in the
 - **Customer Communication**: Automated notifications
 - **Order Analytics**: Sales performance tracking
 
-![Order Management](./docs/images/features/admin-orders.png)
-*Complete order management system*
 
 ### User Management
 - **User Analytics**: Customer behavior insights
@@ -104,8 +74,6 @@ This document provides a comprehensive overview of all features available in the
 - **Role Management**: Admin and customer role assignment
 - **Activity Monitoring**: User engagement tracking
 
-![User Analytics](./docs/images/features/user-analytics.png)
-*Detailed user analytics and management*
 
 ### Brand Management
 - **Brand CRUD**: Complete brand management
@@ -113,7 +81,7 @@ This document provides a comprehensive overview of all features available in the
 - **Logo Management**: Brand image uploads
 - **Product Association**: Link products to brands
 
-![Brand Management](./docs/images/features/brand-management.png)
+![Brand Management](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/BrandsManage.png)
 *Comprehensive brand management system*
 
 ### Banner Management
@@ -122,8 +90,6 @@ This document provides a comprehensive overview of all features available in the
 - **Click Tracking**: Banner performance analytics
 - **Responsive Banners**: Mobile-optimized banner display
 
-![Banner Management](./docs/images/features/banner-management.png)
-*Dynamic banner management system*
 
 ## 🎨 UI/UX Features
 
@@ -134,11 +100,6 @@ This document provides a comprehensive overview of all features available in the
 - **Accessibility**: WCAG compliant components
 - **Loading States**: Smooth loading experiences
 
-![Dark Mode](./docs/images/features/dark-mode.png)
-*Beautiful dark mode implementation*
-
-![Mobile Responsive](./docs/images/features/mobile-responsive.png)
-*Mobile-optimized interface*
 
 ### Interactive Elements
 - **Smooth Animations**: Micro-interactions throughout
@@ -147,8 +108,6 @@ This document provides a comprehensive overview of all features available in the
 - **Skeleton Loading**: Content placeholder loading
 - **Infinite Scroll**: Seamless content loading
 
-![Loading States](./docs/images/features/loading-states.png)
-*Elegant loading states and skeletons*
 
 ## 🔍 Search & Discovery
 
@@ -158,8 +117,6 @@ This document provides a comprehensive overview of all features available in the
 - **Search History**: Recent search tracking
 - **No Results Handling**: Helpful suggestions when no products found
 
-![Search Interface](./docs/images/features/search.png)
-*Advanced search with real-time results*
 
 ### Filtering System
 - **Brand Filtering**: Filter by product brands
@@ -167,8 +124,6 @@ This document provides a comprehensive overview of all features available in the
 - **Stock Status**: In-stock/out-of-stock filtering
 - **Sorting Options**: Multiple sorting criteria
 
-![Filter System](./docs/images/features/filters.png)
-*Comprehensive filtering system*
 
 ## 📧 Communication Features
 
@@ -178,8 +133,6 @@ This document provides a comprehensive overview of all features available in the
 - **Email Verification**: Account activation emails
 - **Password Reset**: Secure password recovery emails
 
-![Email Templates](./docs/images/features/email-templates.png)
-*Beautiful email templates*
 
 ### Notifications
 - **Toast Notifications**: In-app user feedback
@@ -195,8 +148,7 @@ This document provides a comprehensive overview of all features available in the
 - **Popular Products**: Most viewed and purchased items
 - **Customer Segments**: User categorization
 
-![Customer Analytics](./docs/images/features/customer-analytics.png)
-*Detailed customer behavior analytics*
+
 
 ### Sales Analytics
 - **Revenue Tracking**: Sales performance over time
@@ -204,8 +156,7 @@ This document provides a comprehensive overview of all features available in the
 - **Order Analytics**: Order volume and trends
 - **Brand Performance**: Sales by brand analysis
 
-![Sales Analytics](./docs/images/features/sales-analytics.png)
-*Comprehensive sales analytics dashboard*
+
 
 ## 🔒 Security Features
 
@@ -243,7 +194,7 @@ This document provides a comprehensive overview of all features available in the
 - **Data Synchronization**: Sync when connection restored
 - **Cached Content**: Essential content available offline
 
-![Offline Mode](./docs/images/features/offline-mode.png)
+![Offline Mode](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/Offline.png)
 *Offline detection and user feedback*
 
 ## 🛠️ Developer Features
