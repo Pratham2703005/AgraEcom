@@ -7,6 +7,7 @@ import { formatProductName } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
 // Type guard to check if offers is a valid Record<string, number>
+export const dynamic = 'force-dynamic';
 function isValidOffers(offers: Prisma.JsonValue | null): offers is Record<string, number> {
   return (
     offers !== null &&
@@ -38,7 +39,7 @@ async function getHighDemandProducts() {
       take: 4,
       include: {
         brand: true
-      }
+      },
     });
 
     return products;
