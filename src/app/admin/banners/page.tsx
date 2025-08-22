@@ -1,23 +1,65 @@
-import { db } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ArrowLeftIcon } from "lucide-react";
+import { getServerSession } from "next-auth/next";
+import { ArrowLeftIcon, EditIcon } from "lucide-react";
+import { authOptions } from "@/lib/auth"; // Adjust path as needed
+import DeleteBannerButton from "./DeleteBannerButton";
+import { getBanners } from "@/lib/banner-service"; // Create this service
+
+type Banner = {
+  id: string;
+  title: string;
+  description: string | null;
+  bannerImg: string;
+  link: string | null;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export default async function BannersManagementPage() {
   const session = await getServerSession(authOptions);
-  
-  if (!session || session.user.role !== "ADMIN") {
+
+  // Redirect if not authenticated
+  if (!session) {
     redirect("/login");
   }
 
-  const banners = await db.banner.findMany({
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  // Redirect if not admin
+  if (session.user?.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  // Fetch banners on the server
+  let banners: Banner[] = [];
+  let error: string | null = null;
+
+  try {
+    banners = await getBanners();
+  } catch (err) {
+    console.error("Error fetching banners:", err);
+    error = "Failed to load banners. Please try again later.";
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          <div className="text-center py-20">
+            <p className="text-red-500 dark:text-red-400">{error}</p>
+            <Link 
+              href="/admin"
+              className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Return to Admin
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-6 max-w-7xl mx-auto">
@@ -29,7 +71,7 @@ export default async function BannersManagementPage() {
           >
             <ArrowLeftIcon className="size-6" />
           </Link>
-          <h1 className="text-2xl font-bold">Banners Manager</h1>
+          <h1 className="text-2xl font-bold ml-2">Banners Manager</h1>
         </div>
         <Link 
           href="/admin/banners/new" 
@@ -38,7 +80,6 @@ export default async function BannersManagementPage() {
           +
         </Link>
       </div>
-      
 
       <div className="bg-white dark:bg-neutral-800 rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
@@ -124,16 +165,12 @@ export default async function BannersManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
                         href={`/admin/banners/edit/${banner.id}`}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4 inline-flex items-center"
                       >
+                        <EditIcon className="size-4 mr-1" />
                         Edit
                       </Link>
-                      <Link
-                        href={`/admin/banners/delete/${banner.id}`}
-                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                      >
-                        Delete
-                      </Link>
+                      <DeleteBannerButton bannerId={banner.id} />
                     </td>
                   </tr>
                 ))
