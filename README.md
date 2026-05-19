@@ -4,7 +4,7 @@ A full-featured e-commerce platform built with Next.js 15, featuring modern UI/U
 
 ![AgraEcom Homepage](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/homepage.png)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -57,7 +57,7 @@ A full-featured e-commerce platform built with Next.js 15, featuring modern UI/U
 
    Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## 📱 Screenshots
+## Screenshots
 
 ### Customer Experience
 ![Product Catalog](https://raw.githubusercontent.com/Pratham2703005/AgraEcom/main/public/docs/ProductSearch.png)
@@ -83,7 +83,7 @@ A full-featured e-commerce platform built with Next.js 15, featuring modern UI/U
 *Real-time stock management with offer adjustments*
 
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS, Radix UI
@@ -95,22 +95,22 @@ A full-featured e-commerce platform built with Next.js 15, featuring modern UI/U
 - **Form Handling**: React Hook Form with Zod validation
 - **UI Components**: Custom components with Radix UI primitives
 
-## 📋 Key Features
+## Key Features
 
 For detailed feature documentation, see [FEATURES.md](./FEATURES.md)
 
-- 🛒 **E-commerce Core**: Product catalog, cart, checkout, orders
-- 👤 **User Management**: Authentication, profiles, email verification
-- 🔧 **Admin Panel**: Complete management dashboard
-- 📱 **Responsive Design**: Mobile-first approach
-- 🌙 **Dark Mode**: System-aware theme switching
-- 📧 **Email System**: Transactional emails with templates
-- 🔍 **Search & Filter**: Advanced product discovery
-- 📊 **Analytics**: User and sales analytics
-- 🎨 **Brand Management**: Multi-brand support
-- 🏷️ **Dynamic Offers**: Quantity-based pricing
+- **E-commerce Core**: Product catalog, cart, checkout, orders
+- **User Management**: Authentication, profiles, email verification
+- **Admin Panel**: Complete management dashboard
+- **Responsive Design**: Mobile-first approach
+- **Dark Mode**: System-aware theme switching
+- **Email System**: Transactional emails with templates
+- **Search & Filter**: Advanced product discovery
+- **Analytics**: User and sales analytics
+- **Brand Management**: Multi-brand support
+- **Dynamic Offers**: Quantity-based pricing
 
-## 🏗️ Project Structure
+## Project Structure
 
 For detailed project structure, see [STRUCTURE.md](./STRUCTURE.md)
 
@@ -123,7 +123,7 @@ src/
 └── types/              # TypeScript type definitions
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 
@@ -139,7 +139,7 @@ npm run build
 npm start
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -147,11 +147,11 @@ npm start
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
 If you encounter any issues or have questions:
 
@@ -159,7 +159,7 @@ If you encounter any issues or have questions:
 2. Search existing [issues](../../issues)
 3. Create a new issue with detailed information
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Next.js](https://nextjs.org/) - The React framework
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
